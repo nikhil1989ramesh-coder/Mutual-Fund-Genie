@@ -1,0 +1,17 @@
+# Files/folders to exclude from Vercel deployment
+Phase_1_Data_Ingestion/
+Phase-6_Testing_Deliverables/
+URL_Tests/
+legacy/
+*.pyc
+__pycache__/
+.venv/
+.git/
+node_modules/
+.env
+.env.local
+frontend/.next/
+
+# Large Binary Files (regenerated at startup)
+Phase_2_Knowledge_Base/faiss_index.bin
+Phase_2_Knowledge_Base/faiss_metadata.json

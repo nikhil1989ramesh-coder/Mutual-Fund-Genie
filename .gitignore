@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.venv/
+venv/
+env/
+
+# Secrets & Environment
+.env
+.env.local
+.env.*.local
+
+# FAISS index (large binary, regenerate with build_faiss_db.py)
+Phase_2_Knowledge_Base/faiss_index.bin
+Phase_2_Knowledge_Base/faiss_metadata.json
+
+# Node.js
+node_modules/
+.npm
+.yarn
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.suo
+*.user
+.idea/
+
+# Git
+*.orig
