@@ -62,7 +62,7 @@ body {
    SCROLLBAR STYLING
    ============================================ */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -71,11 +71,12 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--brand-navy-light);
-  border-radius: 3px;
+  border-radius: 5px;
+  border: 2px solid var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--brand-red);
+  background: var(--brand-gold);
 }
 
 /* ============================================
@@ -323,7 +324,7 @@ body {
 .chat-section {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  height: 100%;
   min-height: 0;
   flex: 1;
 }
@@ -353,6 +354,16 @@ body {
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  max-height: 650px;
+}
+
+@media (max-width: 1023px) {
+  .chat-window {
+    max-height: 60vh;
+  }
 }
 
 @media (min-width: 768px) {
@@ -1348,13 +1359,14 @@ nextjs-portal {
    MUTUAL FUND BASICS — scrollable list
    ============================================ */
 .basics-scroll {
-  max-height: 200px;
+  max-height: 380px;
   overflow-y: auto;
   padding: 2px 0;
+  scrollbar-gutter: stable;
 }
 
 .basics-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .basics-scroll::-webkit-scrollbar-track {
@@ -1362,8 +1374,8 @@ nextjs-portal {
 }
 
 .basics-scroll::-webkit-scrollbar-thumb {
-  background: var(--brand-navy-light);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
 /* ============================================
