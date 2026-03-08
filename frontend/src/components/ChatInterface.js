@@ -282,12 +282,6 @@ You can explore the app in multiple ways:
                 <div ref={bottomRef} />
             </div>
 
-            {!hasInteracted && messages.length <= 1 && (
-                <div className="helper-banner">
-                    🚀 Tip: Click any question from the right panel or type your own question below.
-                </div>
-            )}
-
             <div className="input-bar">
                 <textarea
                     ref={textareaRef}

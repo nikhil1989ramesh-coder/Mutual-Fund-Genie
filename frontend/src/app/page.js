@@ -143,9 +143,6 @@ export default function Home() {
               🕐 Last Updated On {timestamp}
             </div>
           )}
-          <div className="mobile-guidance" aria-hidden="true">
-            Tap a question from Mutual Fund Basics or Suggested Questions, or type your own question below.
-          </div>
         </div>
 
         {/* RIGHT PANEL */}

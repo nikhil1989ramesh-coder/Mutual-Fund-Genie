@@ -671,20 +671,7 @@ body {
   min-height: 0;
 }
 
-/* Helper Banner */
-.helper-banner {
-  background: rgba(0, 53, 128, 0.2);
-  border: 1px solid var(--brand-navy-light);
-  color: var(--brand-gold);
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  animation: fadeIn 0.5s ease;
-}
+/* Helper Banner classes removed - consolidated into chat welcome message */
 
 .creator-link {
   color: var(--brand-gold);
@@ -706,22 +693,7 @@ body {
   gap: 6px;
 }
 
-.mobile-guidance {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 12px;
-  padding: 8px;
-  background: var(--surface-glass);
-  border-radius: 8px;
-}
-
-@media (min-width: 768px) {
-  .mobile-guidance {
-    display: none;
-  }
-}
+/* Mobile Guidance classes removed - consolidated into chat welcome message */
 
 /* Panel flex utility classes — used on panel-card in sidebars */
 .panel-flex-shrink {
