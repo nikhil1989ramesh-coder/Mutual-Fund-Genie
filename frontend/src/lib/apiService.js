@@ -1,13 +1,31 @@
 /**
  * API Service Layer
  * Communicates with the FastAPI backend at /api/* routes.
- * On Vercel, traffic is proxied. Locally, we talk directly to localhost:8000.
+ * When NEXT_PUBLIC_API_URL is empty, calls same-origin /api/* (Next.js stub routes on Vercel).
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 /**
- * Send a chat message to the RAG backend.
+ * Parse error body from a failed response; always return an object with detail.
+ */
+async function parseErrorResponse(response) {
+  const contentType = response.headers.get('content-type') || '';
+  try {
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      return { detail: data.detail || data.message || `Server error: ${response.status}` };
+    }
+    const text = await response.text();
+    if (text && text.length < 200) return { detail: text };
+    return { detail: `Server error: ${response.status}. Please try again.` };
+  } catch {
+    return { detail: response.status === 500 ? 'Server error. Please try again.' : `Request failed: ${response.status}` };
+  }
+}
+
+/**
+ * Send a chat message to the RAG backend (or Next.js stub).
  * @param {string} message - The user query.
  * @returns {Promise<{answer: string, sources: string[]}>}
  */
@@ -25,7 +43,7 @@ export async function sendChatMessage(message) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ detail: 'Unknown server error' }));
+      const errorData = await parseErrorResponse(response);
       throw new Error(errorData.detail || `Server error: ${response.status}`);
     }
 
@@ -35,7 +53,6 @@ export async function sendChatMessage(message) {
       throw new Error("⚠️ Mobile Connection Blocked: You are viewing this site from a mobile device, but the backend is set to localhost.");
     }
 
-    // Pass the actual error message up, but wrap it if it's a generic "Failed to fetch"
     if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
       const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
       throw new Error(isProduction
@@ -59,7 +76,8 @@ export async function fetchFAQs() {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to load FAQs: HTTP ${response.status}`);
+    const errorData = await parseErrorResponse(response);
+    throw new Error(errorData.detail || `Failed to load FAQs: HTTP ${response.status}`);
   }
 
   return response.json();

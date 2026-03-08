@@ -190,10 +190,104 @@ cd frontend && npm run dev
 
 ## 🌐 Deployment (Vercel)
 
-- Connect the repo ([GitHub](https://github.com/nikhil1989ramesh-coder/Mutual-Fund-Genie)); set **Root Directory** to **`frontend`**.
-- Optional: `GROQ_API_KEY` (and `GEMINI_API_KEY` for fallback). For full RAG, run the FastAPI backend elsewhere and set `NEXT_PUBLIC_API_URL`.
+### Recommended: Deploy the Next.js app only (frontend)
 
-**Pre-push:** Run `python -m pytest tests/ -v`, `cd frontend && npm test`, and `cd frontend && npm run build`.
+The production app is the **Next.js frontend** in `frontend/`. It works without the FastAPI backend (stub API routes return placeholder answers). For full RAG, run the FastAPI backend elsewhere and set `NEXT_PUBLIC_API_URL`.
+
+### Fresh project: delete old + create new (exact values)
+
+Use this when you want to delete the existing Vercel project and deploy from scratch.
+
+**Step 1 — Delete the old project (optional)**
+
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard).
+2. Open the project you want to remove (e.g. **mutual-fund-genie**).
+3. Open **Settings** (top tab).
+4. Scroll to **Danger Zone**.
+5. Click **Delete Project** and confirm (enter the project name if asked).
+
+**Step 2 — Create a new project**
+
+1. Click **Add New…** → **Project** (or **Import Project**).
+2. **Import Git Repository:** choose **GitHub** and select repository **`nikhil1989ramesh-coder/Mutual-Fund-Genie`**. If it’s missing, adjust GitHub App permissions for Vercel and try again.
+3. Click **Import**.
+
+**Step 3 — Configure (values to enter)**
+
+Before deploying, set these. Click **Edit** next to each if the defaults differ.
+
+| Field | Value | Notes |
+|-------|--------|--------|
+| **Project Name** | `mf-genie` or `mutual-fund-genie` | Any name you prefer. |
+| **Root Directory** | `frontend` | **Required.** Edit → enter `frontend` (no slash) → Continue. |
+| **Framework Preset** | `Next.js` | Should auto-detect. |
+| **Build Command** | `npm run build` | Or leave default. |
+| **Output Directory** | *(leave default)* | Next.js sets this. |
+| **Install Command** | `npm install` | Or leave default. |
+| **Node.js Version** | `20.x` or default | 18.x or 20.x both work. |
+
+**Step 4 — Environment variables (optional)**
+
+- For **frontend-only** deploy: leave empty.
+- For **full RAG** later: add `GROQ_API_KEY`, optionally `GEMINI_API_KEY`, and `NEXT_PUBLIC_API_URL` (your FastAPI backend URL) under **Settings → Environment Variables**.
+
+**Step 5 — Deploy**
+
+- Click **Deploy**. Wait for the build (about 1–2 minutes).
+- Open the **Visit** / **Production URL** when ready.
+
+**Step 6 — Optional:** **Settings → Domains** to add a custom domain.
+
+---
+
+### Steps to get deployment right
+
+1. **Connect the repo**
+   - In [Vercel](https://vercel.com): **Add New Project** → Import [GitHub repo](https://github.com/nikhil1989ramesh-coder/Mutual-Fund-Genie).
+
+2. **Set Root Directory (critical)**
+   - **Project Settings** → **General** → **Root Directory** → click **Edit**.
+   - Set to **`frontend`** (no leading slash). Save.
+   - This makes Vercel use `frontend/` as the project root and `frontend/vercel.json` for config. The repo-root `vercel.json` is **not** used when Root Directory is `frontend`.
+
+3. **Build settings (should auto-detect)**
+   - **Framework Preset:** Next.js (auto-detected from `frontend/package.json`).
+   - **Build Command:** `npm run build` (or leave default).
+   - **Output Directory:** leave default (Next.js sets this).
+   - **Install Command:** `npm install` (or leave default).
+
+4. **Environment variables (optional)**
+   - **Project Settings** → **Environment Variables**
+   - Add `GROQ_API_KEY` (and `GEMINI_API_KEY` for fallback) if you later connect a backend.
+   - For frontend-only deploy, you don’t need any env vars.
+
+5. **Deploy**
+   - Push to `main` or click **Redeploy** in the Vercel dashboard.
+
+### Pre-push checklist
+
+Run before pushing to avoid deploy failures:
+
+```bash
+cd frontend && npm run build
+cd frontend && npm test
+```
+
+Optional (backend tests): `python -m pytest tests/ -v`
+
+### If deployment still fails
+
+| Error | Fix |
+|-------|-----|
+| **Function Runtimes must have a valid version** | You are not using Root Directory `frontend`. Set **Root Directory** to **`frontend`** so `frontend/vercel.json` is used (no Python runtime). |
+| **Function must contain at least one property** | Same as above: use Root Directory **`frontend`**. |
+| **Build fails / No package.json** | Root Directory must be **`frontend`**, not repo root. |
+| **404 or wrong routes** | Ensure Root Directory is **`frontend`**; the app is served from the Next.js build in `frontend/`. |
+| **Unknown server error** | Ensure **Build Command** is exactly **`npm run build`** (not `npm run`). Redeploy after fixing. If it persists, redeploy from the latest code (API routes and apiService were hardened to return JSON on errors). |
+
+### Optional: deploy from repo root (no Root Directory)
+
+If you do **not** set Root Directory, the repo-root `vercel.json` is used. It is configured to run `cd frontend && npm run build` and use `frontend/.next` as output. Prefer using **Root Directory = frontend** for the most reliable builds.
 
 ---
 

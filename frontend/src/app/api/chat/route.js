@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(request) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const message = body?.message?.trim();
     if (!message) {
       return NextResponse.json(
@@ -14,15 +14,16 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-  } catch {
+
+    return NextResponse.json({
+      answer: 'This deployment is running without the RAG backend. For full answers, run the FastAPI backend locally (see README) or set NEXT_PUBLIC_API_URL to your backend URL.\n\nLast updated from sources: https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund',
+      sources: ['https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund'],
+    });
+  } catch (err) {
+    console.error('[api/chat]', err);
     return NextResponse.json(
-      { detail: 'Invalid JSON body.' },
-      { status: 400 }
+      { detail: 'Server error while processing your message. Please try again.' },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({
-    answer: 'This deployment is running without the RAG backend. For full answers, run the FastAPI backend locally (see README) or set NEXT_PUBLIC_API_URL to your backend URL.\n\nLast updated from sources: https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund',
-    sources: ['https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund'],
-  });
 }
