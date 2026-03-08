@@ -12,7 +12,26 @@ A RAG-powered chatbot that answers factual questions about the **top 5 HDFC Mutu
 | **Target AMC** | HDFC Mutual Fund |
 | **Objective** | Facts-only, RAG-based FAQ assistant for **retail beginners** (e.g. “What is a mutual fund?”) and **professionals** (e.g. expense ratio, AUM). Uses only official public sources; no investment advice. |
 
-**Corpus (verified public URLs):** ET Money & Groww factsheets for the top 5 schemes (Flexi Cap, ELSS Tax Saver, Mid-Cap Opportunities, Small Cap, Liquid Fund); AMFI NAV/master data; SEBI circulars; AMFI knowledge centre for educational content. See `architecture.md` for the full URL list.
+**Corpus (11 verified, stable URLs — tested 200 OK):**
+
+- **HDFC Flexi Cap Fund**
+  1. `https://www.etmoney.com/mutual-funds/hdfc-flexi-cap-fund-direct-plan-growth/15694` (Detailed Factsheet/Overview)
+  2. `https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth` (Key Metrics & Ratios)
+- **HDFC ELSS Tax Saver**
+  3. `https://www.etmoney.com/mutual-funds/hdfc-elss-tax-saver-direct-plan-growth/15698` (Detailed Factsheet/Overview)
+- **HDFC Mid-Cap Opportunities Fund**
+  4. `https://www.etmoney.com/mutual-funds/hdfc-mid-cap-opportunities-fund-direct-plan-growth/15684` (Detailed Factsheet/Overview)
+  5. `https://groww.in/mutual-funds/hdfc-mid-cap-opportunities-fund-direct-growth` (Key Metrics & Ratios)
+- **HDFC Liquid Fund**
+  6. `https://www.etmoney.com/mutual-funds/hdfc-liquid-fund-direct-plan-growth/15682` (Detailed Factsheet/Overview)
+  7. `https://groww.in/mutual-funds/hdfc-liquid-fund-direct-growth` (Key Metrics & Ratios)
+- **HDFC Small Cap Fund**
+  8. `https://www.etmoney.com/mutual-funds/hdfc-small-cap-fund-direct-plan-growth/15690` (Detailed Factsheet/Overview)
+  9. `https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth` (Key Metrics & Ratios)
+- **Official master data & guidelines (educational corpus)**
+  10. `https://www.amfiindia.com/spages/NAVAll.txt` (Live AMFI Master NAV — data freshness)
+  11. `https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=3&ssid=13&smid=0` (SEBI Mutual Fund Circulars)
+  12. `https://www.amfiindia.com/investor#knowledge-centre` (AMFI: What is a Mutual Fund — educational baseline)
 
 ---
 
@@ -54,7 +73,17 @@ A RAG-powered chatbot that answers factual questions about the **top 5 HDFC Mutu
 
 ### 1. Ingest (Data scrape & process)
 
-Crawl and extract structured scheme data from INDMoney’s HDFC AMC portal for the **top 5 schemes**. Store text chunks and build a **FAISS** index via `build_faiss_db.py` from `vector_store_chunks.json`; optional structured metadata (e.g. `structured_store.csv`).
+**Main source:** `https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund`
+
+Crawl and extract structured scheme data from INDMoney’s HDFC AMC portal. **Data targets (Top 5 HDFC schemes):**
+
+- HDFC Flexi Cap Fund (Flexi-cap Equity)
+- HDFC ELSS Tax Saver (ELSS Equity)
+- HDFC Mid-Cap Opportunities Fund (Mid-cap Equity)
+- HDFC Small Cap Fund (Small-cap Equity)
+- HDFC Liquid Fund (Liquid Debt)
+
+Store text chunks and build a **FAISS** index via `build_faiss_db.py` from `vector_store_chunks.json`; optional structured metadata (e.g. `structured_store.csv`).
 
 ### 2. Retrieve (Search & context)
 
