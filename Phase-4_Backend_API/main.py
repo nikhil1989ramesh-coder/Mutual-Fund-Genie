@@ -23,14 +23,20 @@ try:
     from Phase_3_Query_Generation.rag_agent import MutualFundRAG
     from Phase_5_Scheduler.scheduler import start_scheduler
 except ImportError:
-    # Fallback for dynamic loading if package structure isn't recognized
-    from importlib.machinery import SourceFileLoader
+    # Fallback: load by path (Python 3.12+ compatible; load_module() was removed)
+    import importlib.util
     rag_module_path = os.path.join(BASE_DIR, 'Phase_3_Query_Generation', 'rag_agent.py')
-    rag_agent_module = SourceFileLoader("rag_agent", rag_module_path).load_module()
+    spec = importlib.util.spec_from_file_location("rag_agent", rag_module_path)
+    rag_agent_module = importlib.util.module_from_spec(spec)
+    sys.modules["rag_agent"] = rag_agent_module
+    spec.loader.exec_module(rag_agent_module)
     MutualFundRAG = rag_agent_module.MutualFundRAG
-    
+
     sched_module_path = os.path.join(BASE_DIR, 'Phase_5_Scheduler', 'scheduler.py')
-    sched_module = SourceFileLoader("scheduler", sched_module_path).load_module()
+    sched_spec = importlib.util.spec_from_file_location("scheduler", sched_module_path)
+    sched_module = importlib.util.module_from_spec(sched_spec)
+    sys.modules["scheduler"] = sched_module
+    sched_spec.loader.exec_module(sched_module)
     start_scheduler = sched_module.start_scheduler
 
 
@@ -48,7 +54,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Mutual Fund RAG API",
-    description="Backend API serving the HDFC Mutual Fund factual knowledge base.",
+    description="Backend API for chat/query. Frontend chat UI calls this API and displays answers with citations and error handling.",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -80,8 +86,8 @@ class FAQResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
-    Takes a user query, checks it against constraints (PII, Scope),
-    retrieves context from FAISS, and returns the LLM generated answer.
+    Backend API for chat/query. Returns { answer, sources } for the frontend
+    chat UI to display with citations; frontend handles errors via error banner.
     """
     if not request.message or not request.message.strip():
         raise HTTPException(status_code=400, detail="Empty message received.")

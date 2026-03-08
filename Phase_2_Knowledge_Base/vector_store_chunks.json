@@ -571,12 +571,30 @@
     },
     {
         "id": "chunk_5_facts",
+        "scheme": "Official Guidelines & Education",
+        "source": "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=3&ssid=13&smid=0",
+        "text": "[Official Guidelines & Education] FACT SHEET: NAV is Not Found. Expense Ratio is Not Found. Exit Load is Not Found. Minimum SIP is Not Found. Riskometer is Not Found. AUM (Fund Size) is Not Found."
+    },
+    {
+        "id": "chunk_5_96",
+        "scheme": "Official Guidelines & Education",
+        "source": "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=3&ssid=13&smid=0",
+        "text": "[Official Guidelines & Education] SEBI | Filings Search \u25bc Search Date : To Department -- All Department -- Corporation Finance Department Corporation Finance Investigation Department Enforcement Department - 1 Enquiries and Adjudication Department Investment Management Department Market Intermediaries Regulation and Supervision Department Office of Investor Assistance and Education Quasi-Judicial Cell Regional Offices Sub Section -- All Sub Section -- Processing Status Public Issues Rights Issues Debt Offer Document Takeovers Mutual Funds Buybacks InvIT Public Issues InvIT Private Issues InvIT Rights Issues REIT Issues SM REIT Issues Municipal Debt Securities Privately Issues Municipal Debt Securities Public Issues Sub Sub Section GO Reset No record(s) available."
+    },
+    {
+        "id": "chunk_5_97",
+        "scheme": "Official Guidelines & Education",
+        "source": "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=3&ssid=13&smid=0",
+        "text": "[Official Guidelines & Education] \u00d7 Login Remember me Please fill the captcha code Submit Reset Forgot Password ? | Subscription for email updates from SEBI."
+    },
+    {
+        "id": "chunk_6_facts",
         "scheme": "Mutual Fund Education",
         "source": "https://www.amfiindia.com/",
         "text": "[Mutual Fund Education] FACT SHEET: NAV is Not Found. Expense Ratio is Not Found. Exit Load is Not Found. Minimum SIP is Not Found. Riskometer is Not Found. AUM (Fund Size) is Not Found."
     },
     {
-        "id": "chunk_5_96",
+        "id": "chunk_6_99",
         "scheme": "Mutual Fund Education",
         "source": "https://www.amfiindia.com/",
         "text": "[Mutual Fund Education] A mutual fund is a financial vehicle that pools money from multiple investors to purchase a diversified portfolio of securities like stocks, bonds, or money market instruments. They are managed by professional fund managers who allocate the fund's assets to produce capital gains or income for the investors. Mutual funds give small or individual investors access to professionally managed portfolios of equities, bonds, and other securities. The price of a mutual fund is known as its Net Asset Value (NAV)."

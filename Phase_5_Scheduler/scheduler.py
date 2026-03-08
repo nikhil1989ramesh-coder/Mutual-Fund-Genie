@@ -1,3 +1,7 @@
+"""
+Phase 5 Scheduler: runs ingest/rebuild and reloads FAISS so Backend API chat/query
+uses fresh data; frontend chat UI continues to show citations and error handling.
+"""
 import os
 import time
 import subprocess

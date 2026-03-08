@@ -37,7 +37,7 @@
 ## 🏗️ Architecture Pipeline
 
 ### 1. Ingest Phase (Data Scrape & Process)
-**Action:** Crawl and extract structured scheme data from INDMoney's HDFC AMC portal.
+**Action:** Crawl and extract structured scheme data from INDMoney's HDFC AMC portal. This data feeds the RAG pipeline used by the **Backend API** for chat/query responses; the **frontend chat UI** displays answers with **citations** and **error handling** (see Phase 4 & Chat App).
 - **Source:** `https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund`
 - **Data Targets (Top 5 HDFC Schemes):** Extract structured data specifically for:
   - HDFC Flexi Cap Fund (Flexi-cap Equity)
@@ -52,7 +52,7 @@
   - Optional: Store structured metadata (e.g. `structured_store.csv`) for reference.
 
 ### 2. Retrieve Phase (Search & Context Fetching)
-**Action:** Find the most relevant facts based on the user's question.
+**Action:** Find the most relevant facts based on the user's question. Used by the **Backend API** when serving chat/query; the **frontend** shows results with **source citations** and **error handling** for failed or busy responses.
 - **Input:** User sends a query (e.g., "What is the exit load for HDFC Flexi Cap?").
 - **Embedding:** Convert the user's query text into a vector embedding using `sentence-transformers/all-MiniLM-L6-v2` (same model as ingestion).
 - **Similarity Search:** Search the in-memory FAISS index for the **top-k** most similar chunks (`top_k=6` for faster, smaller prompts).
@@ -61,7 +61,7 @@
 - **Output:** The top-k chunks (and optional metadata sources) passed to the Generate phase.
 
 ### 3. Generate Phase (LLM Response Creation)
-**Action:** Formulate the final answer using strictly the retrieved context.
+**Action:** Formulate the final answer using strictly the retrieved context. The **Backend API** returns `{ answer, sources }` to the **frontend chat UI**, which displays **citations** (Sources section) and **error handling** (banners for server/network errors).
 - **Primary Provider:** **Groq** — model `llama-3.1-8b-instant`; `max_tokens=280`, timeout 18s.
 - **Optional Fallback:** If Groq returns 429 (rate limit) or a connection error after retries, the system can call **Gemini 1.5 Flash** when `GEMINI_API_KEY` is set.
 - **Response Cache:** Up to 80 recent (answer, sources) pairs are cached by normalized query text; repeat queries return immediately without calling the LLM.
@@ -74,13 +74,13 @@
 - **Citation:** Every answer ends with *"Last updated from sources: <sources>"*.
 
 ### 4. Chat App (Frontend to Backend Integration)
-**Action:** The user interface layer connecting to the RAG pipeline.
-- **Frontend:** Next.js 15 app (React 19) — `ChatInterface`, `FAQSection`, `apiService`; dark HDFC-themed UI, responsive layout, scroll-to-results after each response, and clear error banners for server-busy or network failures.
-- **Backend API (Phase-4_Backend_API):** FastAPI exposes `/api/chat` (POST) and `/api/faq` (GET). Each request runs the full **Retrieve** and **Generate** pipeline (or returns a cached response). CORS enabled for the frontend.
-- **Response delivery:** The backend returns `{ answer, sources }`; the frontend displays the answer with source links and citations.
+**Action:** All chat/query traffic uses the **Backend API** for RAG answers. The **frontend chat UI** provides **citations** and **error handling** across all phases.
+- **Backend API (Phase-4_Backend_API):** FastAPI exposes `/api/chat` (POST) and `/api/faq` (GET). Every chat/query is sent here when `NEXT_PUBLIC_API_URL` is set; each request runs the full **Retrieve** and **Generate** pipeline (or returns a cached response). CORS enabled for the frontend. Returns `{ answer, sources }` for citations.
+- **Frontend:** Next.js 15 app (React 19) — `ChatInterface`, `FAQSection`, `apiService`. Uses **Backend API** for chat/query when configured; displays answers with **citations** (Sources list, clickable links) and **error handling** (error banner for server/network failures, server-busy message, empty/validation errors). Dark HDFC-themed UI, responsive layout, scroll-to-results after each response.
+- **Response delivery:** The backend returns `{ answer, sources }`; the frontend displays the answer with **source links and citations** and surfaces **errors** clearly to the user.
 
 ### 5. Scheduler (Data Freshness Optimization)
-**Action:** Keep facts up to date against INDMoney/HDFC source changes.
+**Action:** Keep facts up to date against INDMoney/HDFC source changes. Ensures the **Backend API** chat/query responses use fresh data; the **frontend** continues to show **citations** and **error handling** for every response.
 - **Execution:** APScheduler (Phase_5_Scheduler) runs as part of the FastAPI app lifespan.
 - **Update Cycle:** The scheduler periodically triggers the ingest/rebuild pipeline; on completion it calls a reload callback to hot-reload the FAISS index and in-memory chunks.
 - **Impact:** The Chat App uses the latest NAVs, AUMs, and fee structures without manual intervention.
@@ -89,6 +89,9 @@
 
 ## ✅ UI & Content Checklist (Implemented)
 
+- [x] **Backend API for chat/query:** Frontend sends all chat messages to Backend API (`/api/chat`) when `NEXT_PUBLIC_API_URL` is set; otherwise uses same-origin stub.
+- [x] **Citations:** Every bot response shows a "📎 Sources" section with clickable source links (from `sources` and inline "Last updated from sources" URLs).
+- [x] **Error handling:** Error banner for network/server errors; server-busy message; validation/empty-message errors; scroll-to-results after response or error.
 - [x] Header: Bank logo only; "LIVE" badge with blinking green dot (`.status-dot`).
 - [x] Section icons: 📈 Schemes, 🏢 About, 🎓 Basics, 💡 Suggested.
 - [x] Welcome instructions and scroll-to-results behavior.

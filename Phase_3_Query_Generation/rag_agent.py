@@ -1,3 +1,7 @@
+"""
+Phase 3 RAG agent: used by Backend API (Phase-4) for chat/query.
+Returns (answer, sources) for the frontend chat UI to show with citations and error handling.
+"""
 import os
 import json
 import faiss

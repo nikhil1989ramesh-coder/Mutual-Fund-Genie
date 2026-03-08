@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Chat UI: uses Backend API for chat/query (via apiService).
+ * Displays each answer with citations (Sources section, clickable links)
+ * and error handling (error banner for server/network/server-busy errors).
+ */
 import { useState, useRef, useEffect } from 'react';
 import { sendChatMessage } from '../lib/apiService';
 
