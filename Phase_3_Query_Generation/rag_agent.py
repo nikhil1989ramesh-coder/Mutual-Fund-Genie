@@ -4,6 +4,7 @@ import faiss
 import numpy as np
 import requests
 import re
+import time
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
@@ -364,7 +365,6 @@ Answer strictly according to the rules."""
                 
                 # Handle rate-limit (429) with a short back-off then retry
                 if response.status_code == 429 and attempt == 0:
-                    import time
                     print("Groq rate limit hit — waiting 5s before retry...")
                     time.sleep(5)
                     continue
@@ -386,7 +386,6 @@ Answer strictly according to the rules."""
                     err_text = e.response.text
                     print(err_text)
                 if attempt == 0:
-                    import time
                     time.sleep(3)
                     continue
                 # Final failure — return friendly message with clean IndMoney sources
