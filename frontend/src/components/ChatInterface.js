@@ -283,15 +283,15 @@ You can explore the app in multiple ways:
                                 <div className="welcome-instruction-list">
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Click a question under **Mutual Fund Basics** to learn key concepts.</span>
+                                        <span>Click a question under Mutual Fund Basics to learn key concepts.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Try the **Suggested Questions** to explore fund details instantly.</span>
+                                        <span>Try the Suggested Questions to explore fund details instantly.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Select any scheme from **Schemes in Scope** to ask about it.</span>
+                                        <span>Select any scheme from Schemes in Scope to ask about it.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
