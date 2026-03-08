@@ -4,7 +4,7 @@
  * On Vercel, traffic is proxied. Locally, we talk directly to localhost:8000.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mutual-fund-genie-api.loca.lt';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 /**
  * Send a chat message to the RAG backend.
