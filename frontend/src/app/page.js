@@ -63,7 +63,7 @@ export default function Home() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <div className="header-logo" aria-hidden="true">🏦</div>
+        <div className="header-logo" aria-hidden="true">🏦🧞</div>
         <div className="header-info">
           <h1>Mutual Fund Genie AI Assistant</h1>
           <p>HDFC Mutual Fund | Facts-only. No investment advice.</p>
