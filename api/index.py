@@ -15,10 +15,13 @@ from typing import List
 try:
     from Phase_3_Query_Generation.rag_agent import MutualFundRAG
 except ImportError:
-    # Fallback for dynamic loading if package structure isn't recognized
-    from importlib.machinery import SourceFileLoader
+    # Fallback: load rag_agent.py by path (Python 3.12+ compatible; load_module() was removed)
+    import importlib.util
     rag_module_path = os.path.join(BASE_DIR, 'Phase_3_Query_Generation', 'rag_agent.py')
-    rag_agent_module = SourceFileLoader("rag_agent", rag_module_path).load_module()
+    spec = importlib.util.spec_from_file_location("rag_agent", rag_module_path)
+    rag_agent_module = importlib.util.module_from_spec(spec)
+    sys.modules["rag_agent"] = rag_agent_module
+    spec.loader.exec_module(rag_agent_module)
     MutualFundRAG = rag_agent_module.MutualFundRAG
 
 app = FastAPI()
