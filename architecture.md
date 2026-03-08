@@ -26,11 +26,16 @@
 
 ---
 
-### 5. Scheduler (Data Freshness Optimization)
-**Action:** Keep facts up to date against INDMoney/HDFC source changes.
-- **Execution:** Implement a simple recurring Python script or APScheduler.
-- **Update Cycle:** The scheduler periodically triggers the **Ingest** script.
-- **Impact:** Ensures the Chat App always retrieves and generates answers using the most current information without manual intervention.
+### 5. Header Visual Polish
+- **[MODIFY] Logo**: Position the `🏦` and `🧞` emojis vertically within the gradient box.
+- **[MODIFY] Typography**: Ensure font weights and colors match the reference image (bold white title, muted subtitle).
+
+### 6. Section & Content Polish
+- **[MODIFY] Header**: Remove `🧞` from the logo.
+- **[MODIFY] Icons**: Use `📈` for Schemes, `🏢` for About, `🎓` for Basics, and `💡` for Suggested.
+- **[MODIFY] ChatInterface**: Rephrase welcome instructions as requested.
+- **[MODIFY] Alignment**: Refine Laptop (1024px-1365px) grid and margins for visual balance.
+- **[MODIFY] Live Badge**: Add `@keyframes` for a blinking green dot (`.status-dot`).
 
 ## 🔒 Key Constraints / Rules of Operation
 1. **Public Sources ONLY:** All answers must be strictly derived from verified public sources (AMC, AMFI, SEBI). The chatbot will **not** use internal back-end app screenshots or third-party blogs as sources.
@@ -83,8 +88,17 @@
 **Action:** The user interface layer connecting to the RAG pipeline.
 - **Frontend Interaction:** The user interface (web app, Streamlit, etc.) captures user messages and displays responses.
 - **Backend Flow (API):** 
-  - The frontend sends the user message to the backend API via HTTP.
-  - The backend executes the **Retrieve** and **Generate** steps.
+  -## Phase 4 — Visual Polish (Header)
+- [x] Refine header logo with stacked emojis (Bank + Genie).
+- [x] Ensure "LIVE" badge and subtitle alignment match reference image.
+
+## Phase 5 — Content & Alignment Refinement
+- [x] Remove Genie logo from header (keep Bank).
+- [x] Add specific icons for each section (Schemes, About, Basics, Suggested).
+- [x] Update welcome instructions with exact rephrased wording.
+- [/] Fix laptop viewport alignment for section accuracy.
+- [ ] Add blinking green dot to "Live" badge.
+nd **Generate** steps.
 - **Response delivery:** The backend returns the constructed answer, complete with strict citations/sources, back to the frontend to be displayed.
 
 ### 5. Scheduler (Data Freshness Optimization)

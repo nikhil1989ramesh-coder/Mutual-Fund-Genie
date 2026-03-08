@@ -17,6 +17,11 @@ const FALLBACK_PATTERNS = [
 const FALLBACK_MSG =
     "If you have any questions or need assistance with HDFC Mutual Fund, feel free to ask!";
 
+const SERVER_BUSY_PREFIXES = [
+    "The AI server is currently receiving too many requests.",
+    "I couldn't reach the AI server right now.",
+];
+
 function isFallbackQuery(text) {
     return FALLBACK_PATTERNS.some((re) => re.test(text.trim()));
 }
@@ -163,38 +168,35 @@ export default function ChatInterface({ externalQuery, onExternalQueryHandled })
     const latestBotRef = useRef(null);
     const textareaRef = useRef(null);
 
-    // Initial Welcome Message
+    // Scroll inside the chat window when the user sends a new message
     useEffect(() => {
-        const welcome = {
-            role: 'bot',
-            text: `💬 Welcome to Mutual Fund Genie AI Assistant
-
-You can explore the app in multiple ways:
-• Click questions under Mutual Fund Basics on the right
-• Try the Suggested Questions to quickly explore fund details
-• Select any scheme from "Schemes in Scope" to ask about it
-• Or type your own question in the chat box below
-
-👇 Get started by clicking a question!`,
-            sources: []
-        };
-        setMessages([welcome]);
-        setLatestBotIdx(0);
-    }, []);
-
-    // Scroll to results/question focus
-    useEffect(() => {
-        if (messages.length > 0) {
-            // If user just sent a message, scroll to bottom to show typing or user bubble
-            if (messages[messages.length - 1].role === 'user') {
-                bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-            // If bot just responded, scroll to top of that response
-            else if (latestBotIdx >= 0 && latestBotRef.current) {
-                latestBotRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        if (!messages.length) return;
+        const last = messages[messages.length - 1];
+        if (last.role === 'user') {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
-    }, [messages, latestBotIdx]);
+    }, [messages]);
+
+    // Ensure viewport scrolls so the top of the results container is visible
+    // after a bot response or an error message is rendered.
+    useEffect(() => {
+        if (!messages.length && !error) return;
+        const last = messages[messages.length - 1];
+        const shouldScrollToTop = (last && last.role === 'bot') || !!error;
+        if (!shouldScrollToTop) return;
+
+        if (typeof document !== 'undefined') {
+            const container =
+                document.querySelector('.chat-section-wrapper') ||
+                document.querySelector('.chat-section');
+
+            // Scroll the whole viewport so the results container starts at the top
+            container?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+    }, [messages, error]);
 
     // Secondary scroll to bottom for typing indicator
     useEffect(() => {
@@ -217,10 +219,12 @@ You can explore the app in multiple ways:
                 autoSubmit();
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [externalQuery, onExternalQueryHandled, isLoading]);
 
     const handleSend = async (overrideQuery) => {
-        const query = (overrideQuery || inputValue).trim();
+        const base = typeof overrideQuery === 'string' ? overrideQuery : inputValue;
+        const query = (base || '').trim();
         if (!query || isLoading) return;
 
         setInputValue('');
@@ -242,6 +246,21 @@ You can explore the app in multiple ways:
 
         try {
             const data = await sendChatMessage(query);
+
+            // If backend returned a friendly error-as-answer, surface it as an error banner
+            // instead of a bot message bubble so users clearly see it's a transient issue.
+            if (data && typeof data.answer === 'string') {
+                const trimmed = data.answer.trim();
+                const isServerBusy = SERVER_BUSY_PREFIXES.some(prefix =>
+                    trimmed.startsWith(prefix)
+                );
+                if (isServerBusy) {
+                    setError('⚠️ The AI engine is temporarily busy. Please wait a few seconds and try again.');
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
             setMessages((prev) => {
                 const next = [...prev, { role: 'bot', text: data.answer, sources: data.sources }];
                 setLatestBotIdx(next.length - 1);
@@ -275,7 +294,7 @@ You can explore the app in multiple ways:
                     <div className="welcome-screen">
                         <div className="welcome-card">
                             <div className="welcome-card-header">
-                                <span>🏦</span>
+                                <span>✨</span>
                                 <span>Welcome to Mutual Fund Genie — Ask, Explore, Learn</span>
                             </div>
                             <div className="welcome-card-content">
@@ -283,15 +302,15 @@ You can explore the app in multiple ways:
                                 <div className="welcome-instruction-list">
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Click a question under Mutual Fund Basics to learn key concepts.</span>
+                                        <span>Click a question under <strong>Mutual Fund Basics</strong> to learn key concepts.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Try the Suggested Questions to explore fund details instantly.</span>
+                                        <span>Try the <strong>Suggested Questions</strong> to explore fund details instantly.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
-                                        <span>Select any scheme from Schemes in Scope to ask about it.</span>
+                                        <span>Select any scheme from <strong>Schemes in Scope</strong> to ask about it.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
                                         <span>•</span>
@@ -299,7 +318,7 @@ You can explore the app in multiple ways:
                                     </div>
                                 </div>
 
-                                <p style={{ color: 'var(--brand-gold)', fontWeight: '600', marginTop: '16px', fontSize: '0.9rem' }}>
+                                <p style={{ color: 'var(--brand-gold)', fontWeight: '600', marginTop: '20px', fontSize: '0.95rem', textAlign: 'center' }}>
                                     👇 Start by clicking a question to begin.
                                 </p>
                             </div>
@@ -327,33 +346,35 @@ You can explore the app in multiple ways:
                 <div ref={bottomRef} />
             </div>
 
-            <div className="input-bar">
-                <textarea
-                    ref={textareaRef}
-                    className="input-textarea"
-                    placeholder="Ask about HDFC Mutual Fund schemes…"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    rows={1}
-                    disabled={isLoading}
-                />
-                <button
-                    className="reset-button"
-                    title="Start a new session"
-                    onClick={handleReset}
-                    disabled={isLoading}
-                >
-                    🔄
-                </button>
-                <button
-                    className="send-button"
-                    title="Send message"
-                    onClick={handleSend}
-                    disabled={isLoading || !inputValue.trim()}
-                >
-                    {isLoading ? <span className="spinner" /> : '➤'}
-                </button>
+            <div className="input-bar-container">
+                <div className="input-bar">
+                    <textarea
+                        ref={textareaRef}
+                        className="input-textarea"
+                        placeholder="Ask about HDFC Mutual Fund schemes…"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        rows={1}
+                        disabled={isLoading}
+                    />
+                    <button
+                        className="reset-button"
+                        title="Start a new session"
+                        onClick={handleReset}
+                        disabled={isLoading}
+                    >
+                        🔄
+                    </button>
+                    <button
+                        className="send-button"
+                        title="Send message"
+                        onClick={handleSend}
+                        disabled={isLoading || !inputValue.trim()}
+                    >
+                        {isLoading ? <span className="spinner" /> : '➤'}
+                    </button>
+                </div>
             </div>
         </div>
     );

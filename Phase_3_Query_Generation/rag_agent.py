@@ -15,14 +15,15 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Setup Groq details
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    # On Vercel, we can also use environment variables set in the dashboard
-    pass 
-    
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
 if not GROQ_API_KEY and not os.environ.get("VERCEL"):
-    raise ValueError("GROQ_API_KEY environment variable not found.")
-    
+    # On Vercel, we can also use environment variables set in the dashboard
+    print("Warning: GROQ_API_KEY not found. Fallback to Gemini will be required if key is present.")
+
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+
 # Using a faster, smaller model to avoid aggressive Groq rate limits while maintaining quality
 MODEL_NAME = "llama-3.1-8b-instant"
 
@@ -246,6 +247,45 @@ class MutualFundRAG:
                     
         return None
 
+    def call_gemini_fallback(self, system_prompt, user_prompt):
+        """Fallback to Gemini 1.5 Flash when Groq is unavailable or rate-limited."""
+        if not GEMINI_API_KEY:
+            print("Gemini API key not found. Cannot fallback.")
+            return None
+
+        print("Calling Gemini 1.5 Flash Fallback...")
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+        
+        # Combine prompts for Gemini's structure
+        full_content = f"{system_prompt}\n\nUser Query: {user_prompt}"
+        
+        payload = {
+            "contents": [{
+                "parts": [{"text": full_content}]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 400
+            }
+        }
+        
+        try:
+            response = requests.post(GEMINI_API_URL, headers=headers, json=payload, timeout=30)
+            response.raise_for_status()
+            response_json = response.json()
+            
+            # Extract content from Gemini response
+            if 'candidates' in response_json and len(response_json['candidates']) > 0:
+                answer = response_json['candidates'][0]['content']['parts'][0]['text']
+                return answer.strip()
+            return None
+        except Exception as e:
+            print(f"Error calling Gemini fallback: {e}")
+            return None
+
     def generate_answer(self, query):
         """Passes the retrieved context and query to Groq LLM with strict constraints."""
         
@@ -351,6 +391,16 @@ Answer strictly according to the rules."""
                     continue
                 # Final failure — return friendly message with clean IndMoney sources
                 err_str = str(e)
+                
+                # Check if we should try Gemini fallback
+                # Only fallback on 429 or general connection failures after retries
+                if attempt == 1:
+                    fallback_answer = self.call_gemini_fallback(system_prompt, user_prompt)
+                    if fallback_answer:
+                        citation_str = ", ".join(clean_sources)
+                        formatted_answer = f"{fallback_answer}\n\nLast updated from sources: {citation_str}"
+                        return formatted_answer, clean_sources
+
                 if '429' in err_str or (hasattr(e, 'response') and e.response and e.response.status_code == 429):
                      return "The AI server is currently receiving too many requests. Please wait a moment and try again.", clean_sources
                 

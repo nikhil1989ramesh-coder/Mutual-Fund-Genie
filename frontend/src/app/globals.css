@@ -40,7 +40,15 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  max-width: 100%;
+}
+
+h1 {
+  font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+  line-height: 1.2;
+}
+
+p {
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
 }
 
 html {
@@ -181,141 +189,139 @@ body {
 /* ============================================
    LAYOUT (Mobile-First)
    ============================================ */
+/* ============================================
+   MAIN CONTENT - GRID SYSTEM
+   ============================================ */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  height: auto;
   width: 100%;
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
 }
 
-/* ============================================
-   HEADER
-   ============================================ */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px 10px;
-  border-bottom: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-}
-
-.header-logo {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--brand-navy), var(--brand-red));
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-  box-shadow: var(--glow-blue);
-}
-
-.header-info h1 {
-  font-size: clamp(1.1rem, 4vw, 1.25rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-}
-
-.header-info p {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-.header-badge {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  color: #4ade80;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 5px 10px;
-  border-radius: 20px;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  animation: pulse-dot 1.5s infinite;
-}
-
-/* ============================================
-   MAIN CONTENT AREA
-   ============================================ */
 .main-content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   width: 100%;
-  padding: 16px;
-  gap: 24px;
-}
-
-.sidebar-left,
-.sidebar-right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex-shrink: 0;
-  width: 100%;
-}
-
-.chat-section-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  gap: 20px;
+  padding: 20px;
   flex: 1;
-  width: 100%;
+  /* Default Desktop (≥1366px) */
+  grid-template-columns: 280px 1fr 320px;
+  grid-template-areas: "left center right";
 }
 
-/* ── Tablet & Small Laptops: ≥768px ─────── */
-@media (min-width: 768px) {
-  .app-container {
-    padding: 0 24px;
-  }
-
-  .main-content {
-    padding: 16px 0;
-  }
-}
-
-/* ── Desktop UI Grid: ≥1024px ─────── */
+/* Laptop Views (1024px - 1366px) */
 @media (min-width: 1024px) {
   .app-container {
-    padding: 0 32px;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .main-content {
-    flex-direction: row;
-    gap: 24px;
-    padding: 24px 0;
-    flex: 1;
-    min-height: 0;
+    grid-template-columns: 320px 1fr 320px;
+    grid-template-areas: "left center right";
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    height: calc(100vh - 80px - 40px);
+    /* Approx header height + footer height */
+    overflow: hidden;
   }
 
   .sidebar-left,
   .sidebar-right {
-    display: flex;
-    width: 260px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 8px;
+    /* Space for scrollbar */
   }
 
-  .sidebar-right {
-    max-height: none;
+  .chat-section-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
+
+  .chat-window {
+    max-height: none;
+    flex: 1;
+  }
+
+  .suggested-section-mobile {
+    display: none;
+  }
+}
+
+/* Tablet & Mobile: 1-column layout */
+@media (max-width: 1023px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "center"
+      "suggested"
+      "left"
+      "right";
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .suggested-section-desktop {
+    display: none;
+  }
+
+  .suggested-section-mobile {
+    grid-area: suggested;
+  }
+}
+
+.sidebar-left {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chat-section-wrapper {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.sidebar-right {
+  grid-area: right;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.suggested-section {
+  grid-area: suggested;
+}
+
+.panel-card {
+  width: 100% !important;
+  max-width: none !important;
+  transition: transform 0.2s ease;
+}
+
+.panel-card:hover {
+  transform: translateY(-2px);
+}
+
+.panel-collapsed .panel-header {
+  border-bottom: none;
+}
+
+.panel-content-animation {
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* ============================================
@@ -368,14 +374,123 @@ body {
 
 @media (min-width: 768px) {
   .chat-window {
-    padding: 16px 8px;
+    padding: 16px 12px;
     gap: 16px;
   }
+}
+
+.input-bar-container {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-primary);
+  padding: 10px 0;
+  z-index: 10;
+  width: 100%;
+  backdrop-filter: blur(8px);
+}
+
+.input-bar {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 20px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  /* Vertically center buttons with text */
+  gap: 12px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================
    MESSAGE BUBBLES
    ============================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.header-logo {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #312e81, #9f1239);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(159, 18, 57, 0.2);
+}
+
+.logo-bank {
+  font-size: 28px;
+}
+
+/* Removed separate logo-genie styles */
+
+.header-info h1 {
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.header-info p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+.header-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(6, 78, 59, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  animation: blink-dot 2s infinite;
+}
+
+@keyframes blink-dot {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .message-row {
   display: flex;
   align-items: flex-end;
@@ -518,125 +633,34 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Welcome card — styled like panel-cards for consistency */
-.welcome-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: clamp(20px, 5vw, 40px);
-  animation: fadeIn 0.5s ease;
-  overflow-y: auto;
-}
-
-.welcome-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-medium);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 520px;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  align-self: center;
-}
-
-.welcome-card-header {
-  background: var(--surface-glass);
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-primary);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.01em;
-}
-
-.welcome-card-content {
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.welcome-instruction-list {
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.welcome-instruction-item span:first-child {
-  color: var(--brand-gold);
-  font-weight: 800;
-  min-width: 12px;
-}
-
-.welcome-instruction-item {
-  display: flex;
-  gap: 10px;
-}
-
-.welcome-card h2 {
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.welcome-card p {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  max-width: none;
-}
+/* welcome-screen and welcome-card styles consolidated below around line 1165 */
 
 /* ============================================
    INPUT BAR
    ============================================ */
-.input-bar {
-  display: flex;
-  gap: 8px;
-  padding: 10px 0 0;
-  border-top: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-  align-items: flex-end;
-}
+/* Consolidated input bar styles found below around line 356 */
 
-@media (min-width: 768px) {
-  .input-bar {
-    gap: 10px;
-    padding: 14px 0 0;
-  }
-}
+/* Removed extra desktop input-bar override — base styles handle it */
 
 .input-textarea {
   flex: 1;
-  background: var(--surface-glass);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
+  background: transparent;
+  border: none;
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: clamp(0.85rem, 2vw, 0.9rem);
-  padding: 10px 14px;
+  padding: 4px 0;
   resize: none;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  min-height: 44px;
+  min-height: 26px;
   max-height: 120px;
   line-height: 1.5;
+  vertical-align: middle;
+  display: flex;
+  align-items: center;
 }
 
-@media (min-width: 768px) {
-  .input-textarea {
-    border-radius: 16px;
-    padding: 12px 16px;
-    min-height: 48px;
-  }
-}
+/* No separate desktop override needed — textarea adapts via flex */
 
 .input-textarea::placeholder {
   color: var(--text-muted);
@@ -1072,6 +1096,67 @@ body {
 }
 
 /* ============================================
+   WELCOME SCREEN
+   ============================================ */
+.welcome-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.welcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.welcome-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.welcome-card-header span:last-child {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.welcome-instruction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-instruction-item {
+  display: flex;
+  gap: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.welcome-instruction-item strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .welcome-card {
+    padding: 16px;
+  }
+}
+
+/* ============================================
    SCHEMES PANEL
    ============================================ */
 .schemes-list {
@@ -1359,10 +1444,16 @@ nextjs-portal {
    MUTUAL FUND BASICS — scrollable list
    ============================================ */
 .basics-scroll {
-  max-height: 380px;
+  flex: 1;
   overflow-y: auto;
   padding: 2px 0;
   scrollbar-gutter: stable;
+}
+
+@media (max-width: 1023px) {
+  .basics-scroll {
+    max-height: 70vh;
+  }
 }
 
 .basics-scroll::-webkit-scrollbar {
@@ -1404,47 +1495,81 @@ nextjs-portal {
 
 /* ── Mobile UI Spacing & Fonts ─────── */
 @media (max-width: 768px) {
-  .chat-window {
-    padding: 10px 2px;
-    gap: 12px;
+  .app-header {
+    padding: 8px 16px;
+    gap: 10px;
   }
 
-  .message-bubble {
-    max-width: 92%;
-    font-size: 0.85rem;
-    padding: 10px 13px;
-    border-radius: 14px;
+  .header-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
   }
 
-  .message-avatar {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
+  .logo-bank {
+    font-size: 20px;
+  }
+
+  .header-info h1 {
+    font-size: 0.95rem;
+  }
+
+  .header-info p {
+    font-size: 0.72rem;
+  }
+
+  .header-badge {
+    padding: 4px 10px;
+    font-size: 0.65rem;
   }
 
   .welcome-screen {
-    padding: 24px 16px;
+    padding: 8px 8px;
+    justify-content: flex-start;
   }
 
-  .welcome-screen h2 {
-    font-size: 1rem;
+  .welcome-card {
+    padding: 10px;
   }
 
-  .welcome-screen p {
+  .welcome-card-header {
+    padding: 8px 12px;
     font-size: 0.8rem;
-  }
-
-  /* Input bar larger touch targets on mobile */
-  .input-bar {
-    padding: 10px 0 0;
     gap: 8px;
   }
 
+  .welcome-card-content {
+    padding: 10px 10px;
+    gap: 6px;
+  }
+
+  .welcome-instruction-list {
+    gap: 4px;
+    font-size: 0.74rem;
+  }
+
+  .welcome-instruction-item {
+    gap: 8px;
+  }
+
+  .welcome-screen p {
+    font-size: 0.74rem;
+    margin-top: 6px;
+  }
+
+  /* Input bar — mobile: compact but aligned */
+  .input-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    align-items: center;
+    /* Keep buttons centered on mobile too */
+  }
+
   .input-textarea {
-    font-size: 0.85rem;
-    padding: 10px 14px;
-    min-height: 44px;
-    border-radius: 14px;
+    font-size: 0.78rem;
+    /* Smaller to prevent placeholder wrapping */
+    padding: 4px 0;
+    min-height: 24px;
   }
 
   .send-button,

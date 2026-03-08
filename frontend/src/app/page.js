@@ -55,18 +55,67 @@ function useCurrentTime() {
   return time;
 }
 
+function CollapsiblePanel({ title, icon, children, defaultOpen = false, className = "" }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const toggle = () => {
+    if (isMobile) setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className={`panel-card ${className} ${isMobile && !isOpen ? 'panel-collapsed' : ''}`}>
+      <div
+        className="panel-header"
+        onClick={toggle}
+        style={{ cursor: isMobile ? 'pointer' : 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>{icon}</span>
+          <span>{title}</span>
+        </div>
+        {isMobile && (
+          <span style={{ transition: 'transform 0.3s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            ▼
+          </span>
+        )}
+      </div>
+      {(!isMobile || isOpen) && (
+        <div className="panel-content-animation">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [pendingFAQ, setPendingFAQ] = useState(null);
-  const handleSidebarClick = (q) => setPendingFAQ(q);
+  const handleSidebarClick = (q) => {
+    setPendingFAQ(q);
+    // Smooth scroll to chat on mobile when clicking a sidebar item
+    if (window.innerWidth < 1024) {
+      document.querySelector('.chat-section-wrapper')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   const timestamp = useCurrentTime();
 
   return (
     <div className="app-container">
       <header className="app-header">
-        <div className="header-logo" aria-hidden="true">🏦🧞</div>
+        <div className="header-logo" aria-hidden="true">
+          <span className="logo-bank">🏦</span>
+        </div>
         <div className="header-info">
           <h1>Mutual Fund Genie AI Assistant</h1>
-          <p>HDFC Mutual Fund | Facts-only. No investment advice.</p>
+          <p>HDFC Mutual Fund | Facts-only.<br />No investment advice.</p>
         </div>
         <div className="header-badge">
           <span className="status-dot" />
@@ -77,11 +126,7 @@ export default function Home() {
       <main className="main-content">
         {/* LEFT PANEL */}
         <aside className="sidebar-left">
-          <div className="panel-card panel-flex-shrink">
-            <div className="panel-header">
-              <span>📋</span>
-              <span>Schemes in My Scope</span>
-            </div>
+          <CollapsiblePanel title="Schemes in My Scope" icon="📈" defaultOpen={false}>
             <div className="schemes-list">
               {SCHEMES.map((s, i) => (
                 <div
@@ -99,22 +144,18 @@ export default function Home() {
               ))}
             </div>
             <div className="schemes-source-note">Source: HDFC AMC · AMFI · SEBI</div>
-          </div>
+          </CollapsiblePanel>
 
-          <div className="panel-card panel-flex-shrink">
-            <div className="panel-header">
-              <span>ℹ️</span>
-              <span>About</span>
-            </div>
-            <div className="about-grid">
+          <CollapsiblePanel title="About" icon="🏢" defaultOpen={false}>
+            <div className="about-grid" style={{ padding: '16px' }}>
               <span className="about-label">Product :</span>
-              <span className="about-value">Mutual Fund Genie AI Assistant</span>
+              <span className="about-value">Mutual Fund Genie</span>
 
               <span className="about-label">Target AMC :</span>
               <span className="about-value">HDFC</span>
 
               <span className="about-label">Engine :</span>
-              <span className="about-value">Groq · Llama-3.3-70b</span>
+              <span className="about-value">Groq · Llama-3.3</span>
 
               <span className="about-label">Creator :</span>
               <span className="about-value">
@@ -122,14 +163,13 @@ export default function Home() {
                   href="https://www.linkedin.com/in/nikhil-ramesh-1b526141/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="creator-link tooltip-trigger"
-                  data-tooltip="Built by Nikhil Ramesh. Click to view creator profile."
+                  className="creator-link"
                 >
                   Nikhil Ramesh
                 </a>
               </span>
             </div>
-          </div>
+          </CollapsiblePanel>
         </aside>
 
         {/* CENTER: Chat */}
@@ -145,13 +185,17 @@ export default function Home() {
           )}
         </div>
 
-        {/* RIGHT PANEL */}
+        {/* RIGHT PANEL: Desktop/Laptop combines Suggested + Basics */}
         <aside className="sidebar-right">
-          <div className="panel-card panel-flex-grow pulse-glow">
-            <div className="panel-header">
-              <span>📘</span>
-              <span>Mutual Fund Basics</span>
-            </div>
+          <div className="suggested-section-desktop"> {/* Hidden on mobile via CSS */}
+            <CollapsiblePanel title="Suggested Questions" icon="💡" defaultOpen={true}>
+              <div className="panel-content-padding" style={{ padding: '0 16px 12px' }}>
+                <FAQSection onFAQClick={handleSidebarClick} />
+              </div>
+            </CollapsiblePanel>
+          </div>
+
+          <CollapsiblePanel title="Mutual Fund Basics" icon="🎓" defaultOpen={false}>
             <div className="basics-scroll">
               <div className="faq-list">
                 {MF_BASICS.map((q, i) => (
@@ -167,25 +211,21 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </div>
+          </CollapsiblePanel>
+        </aside>
 
-          <div className="panel-card panel-flex-shrink pulse-glow">
-            <div className="panel-header">
-              <span>💬</span>
-              <span>Suggested Questions</span>
-            </div>
+        {/* MOBILE-ONLY Suggested Section - Positioned between Chat and Sidebars */}
+        <div className="suggested-section-mobile">
+          <CollapsiblePanel title="Suggested Questions" icon="💡" defaultOpen={true}>
             <div className="panel-content-padding" style={{ padding: '0 16px 12px' }}>
-              <div className="section-intro-text">
-                💡 Try these popular questions to get started.
-              </div>
               <FAQSection onFAQClick={handleSidebarClick} />
             </div>
-          </div>
-        </aside>
+          </CollapsiblePanel>
+        </div>
       </main>
 
       <footer className="app-footer">
-        For educational purposes only. This AI Assistant is not SEBI-registered and does not provide financial or investment advice.
+        For educational purposes only. This AI Assistant is not SEBI-registered and does not provide investment advice.
       </footer>
     </div>
   );

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from typing import List, Optional
 from pydantic import BaseModel
 import sys
@@ -26,13 +27,27 @@ except ImportError:
     sched_module = SourceFileLoader("scheduler", sched_module_path).load_module()
     start_scheduler = sched_module.start_scheduler
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown lifecycle."""
+    global scheduler
+    scheduler = start_scheduler(reload_callback=rag_agent.reload_index)
+    print("Background Scheduler Initialized with Reload Callback.")
+    yield
+    if scheduler:
+        scheduler.shutdown()
+        print("Background Scheduler Shutdown.")
+
+
 app = FastAPI(
     title="Mutual Fund RAG API",
     description="Backend API serving the HDFC Mutual Fund factual knowledge base.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
-# Enable CORS for the Streamlit frontend
+# Enable CORS for the frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,24 +56,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize the RAG agent on startup (Loads FAISS index into memory)
+# Initialize eagerly (needed by lifespan before app starts)
 rag_agent = MutualFundRAG()
 scheduler = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Start the background scheduler on API startup."""
-    global scheduler
-    # We pass the reload_index method as a callback to the scheduler
-    scheduler = start_scheduler(reload_callback=rag_agent.reload_index)
-    print("Background Scheduler Initialized with Reload Callback.")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Shutdown the scheduler on API close."""
-    if scheduler:
-        scheduler.shutdown()
-        print("Background Scheduler Shutdown.")
 
 # Data models
 class ChatRequest(BaseModel):
