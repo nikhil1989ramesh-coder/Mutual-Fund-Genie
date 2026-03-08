@@ -147,9 +147,29 @@ export default function ChatInterface({ externalQuery, onExternalQueryHandled })
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [latestBotIdx, setLatestBotIdx] = useState(-1);
+    const [hasInteracted, setHasInteracted] = useState(false);
     const bottomRef = useRef(null);
     const latestBotRef = useRef(null);
     const textareaRef = useRef(null);
+
+    // Initial Welcome Message
+    useEffect(() => {
+        const welcome = {
+            role: 'bot',
+            text: `💬 Welcome to Mutual Fund Genie AI Assistant
+
+You can explore the app in multiple ways:
+• Click questions under Mutual Fund Basics on the right
+• Try the Suggested Questions to quickly explore fund details
+• Select any scheme from "Schemes in Scope" to ask about it
+• Or type your own question in the chat box below
+
+👇 Get started by clicking a question!`,
+            sources: []
+        };
+        setMessages([welcome]);
+        setLatestBotIdx(0);
+    }, []);
 
     // Scroll to the TOP of the latest bot response
     useEffect(() => {
@@ -169,16 +189,25 @@ export default function ChatInterface({ externalQuery, onExternalQueryHandled })
         if (externalQuery) {
             setInputValue(externalQuery);
             onExternalQueryHandled?.();
-            textareaRef.current?.focus();
+            // Trigger auto-send if not loading
+            if (!isLoading) {
+                const autoSubmit = async () => {
+                    // Small delay to let state update
+                    await new Promise(r => setTimeout(r, 0));
+                    handleSend(externalQuery);
+                };
+                autoSubmit();
+            }
         }
-    }, [externalQuery, onExternalQueryHandled]);
+    }, [externalQuery, onExternalQueryHandled, isLoading]);
 
-    const handleSend = async () => {
-        const query = inputValue.trim();
+    const handleSend = async (overrideQuery) => {
+        const query = (overrideQuery || inputValue).trim();
         if (!query || isLoading) return;
 
         setInputValue('');
         setError(null);
+        setHasInteracted(true);
         setMessages((prev) => [...prev, { role: 'user', text: query }]);
         setIsLoading(true);
 
@@ -252,6 +281,12 @@ export default function ChatInterface({ externalQuery, onExternalQueryHandled })
 
                 <div ref={bottomRef} />
             </div>
+
+            {!hasInteracted && messages.length <= 1 && (
+                <div className="helper-banner">
+                    🚀 Tip: Click any question from the right panel or type your own question below.
+                </div>
+            )}
 
             <div className="input-bar">
                 <textarea

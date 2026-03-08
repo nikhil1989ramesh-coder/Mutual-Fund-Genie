@@ -84,7 +84,12 @@ export default function Home() {
             </div>
             <div className="schemes-list">
               {SCHEMES.map((s, i) => (
-                <div key={i} className="scheme-row">
+                <div
+                  key={i}
+                  className="scheme-row"
+                  onClick={() => handleSidebarClick(`Tell me about ${s.name}`)}
+                  title={`Ask about ${s.name}`}
+                >
                   <span className="scheme-arrow">›</span>
                   <div>
                     <div className="scheme-name">{s.name}</div>
@@ -113,7 +118,13 @@ export default function Home() {
 
               <span className="about-label">Creator :</span>
               <span className="about-value">
-                <a href="https://www.linkedin.com/in/nikhil-ramesh-1b526141/" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://www.linkedin.com/in/nikhil-ramesh-1b526141/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="creator-link tooltip-trigger"
+                  data-tooltip="Built by Nikhil Ramesh. Click to view creator profile."
+                >
                   Nikhil Ramesh
                 </a>
               </span>
@@ -132,11 +143,14 @@ export default function Home() {
               🕐 Last Updated On {timestamp}
             </div>
           )}
+          <div className="mobile-guidance" aria-hidden="true">
+            Tap a question from Mutual Fund Basics or Suggested Questions, or type your own question below.
+          </div>
         </div>
 
         {/* RIGHT PANEL */}
         <aside className="sidebar-right">
-          <div className="panel-card panel-flex-grow">
+          <div className="panel-card panel-flex-grow pulse-glow">
             <div className="panel-header">
               <span>📘</span>
               <span>Mutual Fund Basics</span>
@@ -158,12 +172,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="panel-card panel-flex-shrink">
+          <div className="panel-card panel-flex-shrink pulse-glow">
             <div className="panel-header">
               <span>💬</span>
               <span>Suggested Questions</span>
             </div>
-            <FAQSection onFAQClick={handleSidebarClick} />
+            <div className="panel-content-padding" style={{ padding: '0 16px 12px' }}>
+              <div className="section-intro-text">
+                💡 Try these popular questions to get started.
+              </div>
+              <FAQSection onFAQClick={handleSidebarClick} />
+            </div>
           </div>
         </aside>
       </main>
