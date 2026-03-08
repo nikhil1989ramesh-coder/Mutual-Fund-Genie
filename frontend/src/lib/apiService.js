@@ -34,7 +34,11 @@ export async function sendChatMessage(message) {
     if (API_BASE_URL.includes('localhost') && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
       throw new Error("⚠️ Mobile Connection Blocked: You are viewing this site from a mobile device on Vercel, but the AI engine is running locally on your computer ('localhost'). To test on mobile, access the Next.js app using your computer's Local IP address (e.g., http://192.168.x.x:3000) while on the same Wi-Fi network.");
     }
-    throw new Error(err.message || "⚠️ Could not reach the server. Make sure the backend is running on port 8000.");
+    const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+    const fallbackMsg = isProduction
+      ? "⚠️ The AI server is temporarily unavailable. Please try again in a few minutes."
+      : "⚠️ Could not reach the server. Make sure the backend is running on port 8000.";
+    throw new Error(err.message || fallbackMsg);
   }
 }
 
