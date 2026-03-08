@@ -26,17 +26,6 @@
 
 ---
 
-### 5. Header Visual Polish
-- **[MODIFY] Logo**: Position the `🏦` and `🧞` emojis vertically within the gradient box.
-- **[MODIFY] Typography**: Ensure font weights and colors match the reference image (bold white title, muted subtitle).
-
-### 6. Section & Content Polish
-- **[MODIFY] Header**: Remove `🧞` from the logo.
-- **[MODIFY] Icons**: Use `📈` for Schemes, `🏢` for About, `🎓` for Basics, and `💡` for Suggested.
-- **[MODIFY] ChatInterface**: Rephrase welcome instructions as requested.
-- **[MODIFY] Alignment**: Refine Laptop (1024px-1365px) grid and margins for visual balance.
-- **[MODIFY] Live Badge**: Add `@keyframes` for a blinking green dot (`.status-dot`).
-
 ## 🔒 Key Constraints / Rules of Operation
 1. **Public Sources ONLY:** All answers must be strictly derived from verified public sources (AMC, AMFI, SEBI). The chatbot will **not** use internal back-end app screenshots or third-party blogs as sources.
 2. **Strict NO PII Policy:** The system will explicitly refuse to accept, store, or process Personally Identifiable Information (PAN, Aadhaar, account numbers, OTPs, emails, or phone numbers).
@@ -59,53 +48,58 @@
 - **Extraction Scope:** Pull factual data like Expense Ratio, Exit Load, Minimum SIP, Riskometer, Benchmark, AUM, and NAV for each scheme.
 - **Storage:** 
   - Embed the extracted data blocks as text chunks representing each scheme's facts.
-  - Store chunks in a **Vector Store** (e.g., ChromaDB, FAISS) for similarity search.
-  - Optional: Store structured metadata (like exact numerical fees or categories) in an **Optional Structured Store** (e.g., SQLite or Pandas DataFrame/Dicts) for direct filtering.
+  - Store chunks in a **Vector Store** — **FAISS** (`build_faiss_db.py` builds the index from `vector_store_chunks.json`). ChromaDB is not used.
+  - Optional: Store structured metadata (e.g. `structured_store.csv`) for reference.
 
 ### 2. Retrieve Phase (Search & Context Fetching)
 **Action:** Find the most relevant facts based on the user's question.
 - **Input:** User sends a query (e.g., "What is the exit load for HDFC Flexi Cap?").
-- **Embedding:** Convert the user's query text into a vector embedding using the same model used during ingestion.
-- **Similarity Search:** Search the Vector Store to find the `top-k` most contextually similar data chunks.
-- **Optional Filtering:** (If using a structured store) filter chunks by scheme name or category before similarity search to ensure maximum accuracy.
-- **Output:** The `top-k` chunks representing the factual context.
+- **Embedding:** Convert the user's query text into a vector embedding using `sentence-transformers/all-MiniLM-L6-v2` (same model as ingestion).
+- **Similarity Search:** Search the in-memory FAISS index for the **top-k** most similar chunks (`top_k=6` for faster, smaller prompts).
+- **In-Memory Chunks:** Chunk text is loaded once at startup (and on scheduler reload) from `vector_store_chunks.json`; no disk read per request.
+- **Context Cap:** Combined context is limited to 2,400 characters to keep prompts small and responses fast.
+- **Output:** The top-k chunks (and optional metadata sources) passed to the Generate phase.
 
 ### 3. Generate Phase (LLM Response Creation)
-**Action:** Formulate the final answer using strictly the retrieved context via the Groq API.
-- **Provider & Model:** Utilize **Groq** as the Large Language Model engine for ultra-fast generation.
-- **Input:** `User Query` + `top-k Retrieved Chunks` sent to the Groq LLM.
+**Action:** Formulate the final answer using strictly the retrieved context.
+- **Primary Provider:** **Groq** — model `llama-3.1-8b-instant`; `max_tokens=280`, timeout 18s.
+- **Optional Fallback:** If Groq returns 429 (rate limit) or a connection error after retries, the system can call **Gemini 1.5 Flash** when `GEMINI_API_KEY` is set.
+- **Response Cache:** Up to 80 recent (answer, sources) pairs are cached by normalized query text; repeat queries return immediately without calling the LLM.
+- **Input:** `User Query` + capped retrieved context sent to the LLM.
 - **Prompt Constraints (Strict Execution):**
-  - **Context-Only Answering:** The Chatbot MUST NOT answer any question from its own pre-trained knowledge. It must strictly use *only* the information retrieved from the embeddings. If the answer is not in the embeddings, it must state it does not know.
-  - **Scope Limitation (Top 5 Only):** If a user asks about any mutual fund scheme, bank, or AMC *other* than the predefined Top 5 HDFC schemes (Flexi Cap, ELSS, Mid-Cap, Small Cap, Liquid), the LLM must strictly refuse to answer and state: `"I only have access to information regarding the top 5 HDFC mutual fund schemes."`
-  - **Persona Adaptability:** The system prompt must instruct the LLM to provide simple, clear answers for beginners (e.g., explaining "what is a mutual fund?" using the AMFI educational corpus) while maintaining precision for professionals asking about expense ratios or AUM.
-  - **Factual & Concise:** Ensure the response is factual and ≤ 3 sentences.
-  - **No Investment Advice:** Refuse any subjective, predictive, or advice-seeking queries (e.g., "Should I buy?", "Is this a good fund?") and trigger a polite refusal message with an educational link (W1 constraint).
-  - **PII Refusal (Out of Scope):** The chatbot must strictly refuse to answer or process any questions asking for or providing Personal Identifiable Information (PAN, Aadhaar, account numbers, etc.), stating it is out of scope.
-- **Output Assembly:** LLM generates the final constrained answer. 
-- **Citation formatting:** The system appends the exact source URL metadata to the generated text, ending with: *"Last updated from sources: <date>"*.
+  - **Context-Only Answering:** The Chatbot MUST NOT answer from its own knowledge; use *only* the retrieved context. If the answer is not in the context, state it does not know.
+  - **Scope Limitation (Top 5 Only):** Refuse questions about schemes/AMCs other than the Top 5 HDFC schemes; state: `"I only have access to information regarding the top 5 HDFC mutual fund schemes."`
+  - **Persona Adaptability:** Simple, clear answers for beginners; precise metrics for professionals.
+  - **Factual & Concise:** Response ≤ 3 sentences; no investment advice; no PII.
+- **Citation:** Every answer ends with *"Last updated from sources: <sources>"*.
 
 ### 4. Chat App (Frontend to Backend Integration)
 **Action:** The user interface layer connecting to the RAG pipeline.
-- **Frontend Interaction:** The user interface (web app, Streamlit, etc.) captures user messages and displays responses.
-- **Backend Flow (API):** 
-  -## Phase 4 — Visual Polish (Header)
-- [x] Refine header logo with stacked emojis (Bank + Genie).
-- [x] Ensure "LIVE" badge and subtitle alignment match reference image.
-
-## Phase 5 — Content & Alignment Refinement
-- [x] Remove Genie logo from header (keep Bank).
-- [x] Add specific icons for each section (Schemes, About, Basics, Suggested).
-- [x] Update welcome instructions with exact rephrased wording.
-- [/] Fix laptop viewport alignment for section accuracy.
-- [ ] Add blinking green dot to "Live" badge.
-nd **Generate** steps.
-- **Response delivery:** The backend returns the constructed answer, complete with strict citations/sources, back to the frontend to be displayed.
+- **Frontend:** Next.js 15 app (React 19) — `ChatInterface`, `FAQSection`, `apiService`; dark HDFC-themed UI, responsive layout, scroll-to-results after each response, and clear error banners for server-busy or network failures.
+- **Backend API (Phase-4_Backend_API):** FastAPI exposes `/api/chat` (POST) and `/api/faq` (GET). Each request runs the full **Retrieve** and **Generate** pipeline (or returns a cached response). CORS enabled for the frontend.
+- **Response delivery:** The backend returns `{ answer, sources }`; the frontend displays the answer with source links and citations.
 
 ### 5. Scheduler (Data Freshness Optimization)
 **Action:** Keep facts up to date against INDMoney/HDFC source changes.
-- **Execution:** Implement a scheduled cron job or background task (e.g., Celery, APScheduler, or a simple recurring Python script).
-- **Update Cycle:** The scheduler periodically triggers the **Ingest** script.
-- **Impact:** Ensures the Chat App always retrieves and generates answers using the most current NAVs, AUMs, or fee structures without manual intervention.
+- **Execution:** APScheduler (Phase_5_Scheduler) runs as part of the FastAPI app lifespan.
+- **Update Cycle:** The scheduler periodically triggers the ingest/rebuild pipeline; on completion it calls a reload callback to hot-reload the FAISS index and in-memory chunks.
+- **Impact:** The Chat App uses the latest NAVs, AUMs, and fee structures without manual intervention.
+
+---
+
+## ✅ UI & Content Checklist (Implemented)
+
+- [x] Header: Bank logo only; "LIVE" badge with blinking green dot (`.status-dot`).
+- [x] Section icons: 📈 Schemes, 🏢 About, 🎓 Basics, 💡 Suggested.
+- [x] Welcome instructions and scroll-to-results behavior.
+- [x] Laptop/tablet/mobile responsive grid and alignment.
+
+---
+
+## 🧪 Testing
+
+- **Backend:** `tests/test_api.py` — pytest; 9 tests covering `/api/chat` (valid, empty, whitespace, missing field, internal error), `/api/faq` (list + fallback), and `/docs` / `/openapi.json`.
+- **Frontend:** Jest (apiService + ChatInterface) — 9 tests covering success/error paths, server-busy banner, and network failure handling.
 
 ---
 

@@ -60,8 +60,9 @@ describe('ChatInterface failure modes', () => {
     typeAndSend('Tell me about HDFC Flexi Cap');
 
     await waitFor(() => {
+      // ChatInterface displays err.message in the error banner
       expect(
-        screen.getByText(/Could not reach the server/i)
+        screen.getByText(/Network unreachable/i)
       ).toBeInTheDocument();
     });
   });

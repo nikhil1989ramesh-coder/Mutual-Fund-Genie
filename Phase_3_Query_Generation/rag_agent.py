@@ -95,20 +95,24 @@ class MutualFundRAG:
         # Paths to FAISS and Metadata
         self.index_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "faiss_index.bin")
         self.metadata_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "faiss_metadata.json")
-        
+        self._response_cache = {}  # query_key -> (answer, sources), max 80 entries for speed
         self.load_vector_db()
 
     def load_vector_db(self):
-        """Loads FAISS index and metadata. Safe to call repeatedly."""
+        """Loads FAISS index, metadata, and chunks into memory. Safe to call repeatedly."""
         try:
             print(f"Loading Vector Database from {self.index_path}...")
             self.index = faiss.read_index(self.index_path)
             with open(self.metadata_path, "r", encoding="utf-8") as f:
                 self.metadata = json.load(f)
+            chunks_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "vector_store_chunks.json")
+            with open(chunks_path, "r", encoding="utf-8") as f:
+                self.chunks = json.load(f)
         except Exception as e:
             print(f"Error loading Vector Database: {e}")
             self.index = None
             self.metadata = []
+            self.chunks = []
 
     def reload_index(self):
         """Callback function for the Scheduler to hot-reload the index after extraction"""
@@ -117,42 +121,33 @@ class MutualFundRAG:
             self.index = faiss.read_index(self.index_path)
             with open(self.metadata_path, "r", encoding="utf-8") as f:
                 self.metadata = json.load(f)
+            chunks_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "vector_store_chunks.json")
+            with open(chunks_path, "r", encoding="utf-8") as f:
+                self.chunks = json.load(f)
             print("FAISS reload successful. RAG Agent is up to date.")
             return True
         except Exception as e:
             print(f"Error reloading Vector Database: {e}")
             return False
 
-    def retrieve_context(self, query, top_k=15):
-        """Embeds the query and searches the FAISS database for top K matches."""
-        # Perform vector search (Reduced to k=2 to prevent Groq token limits)
+    def retrieve_context(self, query, top_k=6):
+        """Embeds the query and searches the FAISS database for top K matches. Uses in-memory chunks for speed."""
+        if not self.index or not getattr(self, 'chunks', None):
+            return [], []
         query_vector = self.encoder.encode([query]).astype('float32')
         distances, indices = self.index.search(query_vector, top_k)
-        
-        # Retrieve the original text (which was used to create the embeddings) by mapping back
-        # The original chunks are in `vector_store_chunks.json`. We need to load them to pass pure text to Groq.
-        chunks_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "vector_store_chunks.json")
-        with open(chunks_path, 'r', encoding='utf-8') as f:
-            all_chunks = json.load(f)
-            
         retrieved_contexts = []
-        sources = set() # Use a set to store unique sources
-        
+        sources = set()
         for idx in indices[0]:
-            if idx != -1 and idx < len(all_chunks): # FAISS returns -1 if there are not enough results
-                chunk_data = all_chunks[idx]
-                
-                text_content = chunk_data["text"]
-                # Hard limit individual chunk length
-                
-                retrieved_contexts.append(text_content)
-                
-                # Use the clean source_url from metadata if available
+            if idx != -1 and idx < len(self.chunks):
+                chunk_data = self.chunks[idx]
+                text_content = chunk_data.get("text", "")
+                if text_content:
+                    retrieved_contexts.append(text_content)
                 if idx < len(self.metadata):
                     url = self.metadata[idx].get("source_url", "")
                     if url:
                         sources.add(url)
-                        
         return retrieved_contexts, list(sources)
 
     def is_pii_or_out_of_scope(self, query):
@@ -301,10 +296,18 @@ class MutualFundRAG:
             amfi_url = "https://www.amfiindia.com/investor#knowledge-centre"
             answer = f"{edu_answer}\n\nLast updated from sources: AMFI Mutual Fund Knowledge Centre ({amfi_url})"
             return answer, [amfi_url]
+
+        # In-memory cache for repeated queries (instant response)
+        cache_key = query.strip().lower()[:180]
+        if cache_key in self._response_cache:
+            return self._response_cache[cache_key]
             
-        # 2. Retrieve FAISS context
-        contexts, sources = self.retrieve_context(query)
+        # 2. Retrieve FAISS context (small top_k for faster, smaller prompts)
+        contexts, sources = self.retrieve_context(query, top_k=6)
         combined_context = "\n\n--- \n\n".join(contexts)
+        # Cap context size to keep prompts small and responses fast
+        if len(combined_context) > 2400:
+            combined_context = combined_context[:2400] + "\n\n[Context truncated for brevity.]"
         
         # 3. Construct the Strict Prompt
         system_prompt = f"""You are a helpful mutual fund FAQ assistant named 'Mutual Fund Genie'.
@@ -345,8 +348,8 @@ Answer strictly according to the rules."""
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            "temperature": 0.1,  # Slight warmth allows clearer educational explanations
-            "max_tokens": 400    # Raised from 150: educational answers need more room
+            "temperature": 0.1,
+            "max_tokens": 280  # Shorter for faster generation; still 2-3 sentences
         }
         
         if self.use_mock:
@@ -361,7 +364,7 @@ Answer strictly according to the rules."""
         
         for attempt in range(2):  # Retry once on 429 rate-limit
             try:
-                response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=30)
+                response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=18)
                 
                 # Handle rate-limit (429) with a short back-off then retry
                 if response.status_code == 429 and attempt == 0:
@@ -377,6 +380,10 @@ Answer strictly according to the rules."""
                 # ETMoney/Groww are internal refs only (SCHEME_INTERNAL_REFS) — never shown.
                 citation_str = ", ".join(clean_sources)
                 formatted_answer = f"{answer.strip()}\n\nLast updated from sources: {citation_str}"
+                # Cache successful response for repeat queries
+                if len(self._response_cache) >= 80:
+                    self._response_cache.pop(next(iter(self._response_cache)))
+                self._response_cache[cache_key] = (formatted_answer, clean_sources)
                 return formatted_answer, clean_sources
                 
             except Exception as e:
@@ -398,6 +405,9 @@ Answer strictly according to the rules."""
                     if fallback_answer:
                         citation_str = ", ".join(clean_sources)
                         formatted_answer = f"{fallback_answer}\n\nLast updated from sources: {citation_str}"
+                        if len(self._response_cache) >= 80:
+                            self._response_cache.pop(next(iter(self._response_cache)))
+                        self._response_cache[cache_key] = (formatted_answer, clean_sources)
                         return formatted_answer, clean_sources
 
                 if '429' in err_str or (hasattr(e, 'response') and e.response and e.response.status_code == 429):
