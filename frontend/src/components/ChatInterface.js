@@ -44,27 +44,35 @@ function parseAnswer(raw) {
     let body = parts[0].trim();
     const sourceLine = parts[1] ? parts[1].trim() : null;
 
-    // Remove the trailing message from the body so it doesn't get treated as a bullet point
     const trailingMsg = "If you have any questions or need assistance with HDFC Mutual Fund, feel free to ask!";
     let hasTrailingMsg = false;
-
-    // Only extract trailing msg if it's attached to other content.
-    // If the body IS exclusively the trailing msg, keep it as the main text and don't duplicate.
     if (body.includes(trailingMsg) && body !== trailingMsg) {
         hasTrailingMsg = true;
         body = body.replace(trailingMsg, '').trim();
     }
 
-    // Split by newlines (for bullet points) or fallback to sentences if no newlines
-    let sentences = [];
-    if (body.includes('\n')) {
-        sentences = body.split(/\n+/).map(s => s.trim().replace(/^[-•*]\s*/, '')).filter(s => s.length > 0);
-    } else {
-        const sentenceRegex = /(?<=[.!?])\s+(?=[A-Z0-9])/g;
-        sentences = body.split(sentenceRegex).map((s) => s.trim()).filter((s) => s.length > 0);
-    }
+    // New logic: Detect groupings by Scheme name headers (ending in :)
+    const lines = body.split(/\n+/).map(l => l.trim()).filter(l => l.length > 0);
+    const groups = [];
+    let currentGroup = null;
 
-    return { sentences, sourceLine, hasTrailingMsg };
+    lines.forEach(line => {
+        // If line is a header (e.g. "HDFC Flexi Cap Fund:") or looks like one
+        const isHeader = (line.includes('HDFC') || line.includes('Fund')) && line.endsWith(':');
+
+        if (isHeader) {
+            if (currentGroup) groups.push(currentGroup);
+            currentGroup = { header: line.replace(/:$/, ''), items: [] };
+        } else if (currentGroup) {
+            currentGroup.items.push(line.replace(/^[-•*]\s*/, ''));
+        } else {
+            // Lines before any header or general text
+            groups.push({ header: null, items: [line.replace(/^[-•*]\s*/, '')] });
+        }
+    });
+    if (currentGroup) groups.push(currentGroup);
+
+    return { groups, sourceLine, hasTrailingMsg };
 }
 
 function MessageBubble({ role, text, sources, isLatestBot, topRef }) {
@@ -77,7 +85,7 @@ function MessageBubble({ role, text, sources, isLatestBot, topRef }) {
         );
     }
 
-    const { sentences, sourceLine, hasTrailingMsg } = parseAnswer(text);
+    const { groups, sourceLine, hasTrailingMsg } = parseAnswer(text);
     const inlineSourceUrls = sourceLine
         ? [...sourceLine.matchAll(/(https?:\/\/[^\s),\]]+)/g)].map((m) => m[1])
         : [];
@@ -87,18 +95,21 @@ function MessageBubble({ role, text, sources, isLatestBot, topRef }) {
         <div className="message-row bot" ref={isLatestBot ? topRef : null}>
             <div className="message-avatar bot-av">🏦</div>
             <div className="message-bubble bot-bubble">
-                {sentences.length > 1 ? (
-                    <ul className="answer-bullets" style={{ marginBottom: hasTrailingMsg ? '12px' : '0' }}>
-                        {sentences.map((s, i) => (
-                            <li key={i}>{linkify(s)}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p style={{ marginBottom: hasTrailingMsg ? '12px' : '0' }}>{linkify(sentences[0] || text)}</p>
-                )}
+                {groups.map((group, gIdx) => (
+                    <div key={gIdx} className={group.header ? "scheme-result-group" : ""}>
+                        {group.header && (
+                            <div className="scheme-result-header">{group.header}</div>
+                        )}
+                        <ul className="answer-bullets">
+                            {group.items.map((item, iIdx) => (
+                                <li key={iIdx}>{linkify(item)}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
 
                 {hasTrailingMsg && (
-                    <p className="bot-closing-msg" style={{ fontStyle: 'italic', fontSize: '0.9em', opacity: 0.9 }}>
+                    <p className="bot-closing-msg" style={{ fontStyle: 'italic', fontSize: '0.9em', opacity: 0.9, marginTop: '12px' }}>
                         If you have any questions or need assistance with HDFC Mutual Fund, feel free to ask!
                     </p>
                 )}
@@ -171,14 +182,21 @@ You can explore the app in multiple ways:
         setLatestBotIdx(0);
     }, []);
 
-    // Scroll to the TOP of the latest bot response
+    // Scroll to results/question focus
     useEffect(() => {
-        if (latestBotIdx >= 0 && latestBotRef.current) {
-            latestBotRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (messages.length > 0) {
+            // If user just sent a message, scroll to bottom to show typing or user bubble
+            if (messages[messages.length - 1].role === 'user') {
+                bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            // If bot just responded, scroll to top of that response
+            else if (latestBotIdx >= 0 && latestBotRef.current) {
+                latestBotRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
-    }, [latestBotIdx]);
+    }, [messages, latestBotIdx]);
 
-    // Scroll to bottom only while typing indicator is showing
+    // Secondary scroll to bottom for typing indicator
     useEffect(() => {
         if (isLoading) {
             bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -255,10 +273,39 @@ You can explore the app in multiple ways:
             <div className="chat-window">
                 {messages.length === 0 && !isLoading && (
                     <div className="welcome-screen">
-                        <div className="welcome-icon">🏦</div>
-                        <h2>Mutual Fund Genie AI Assistant</h2>
-                        <p>Have questions about HDFC Mutual Fund schemes? Ask me about NAV, AUM, Exit loads, Expense ratios, and other scheme details.</p>
-                        <p>My responses are based on verified official sources.</p>
+                        <div className="welcome-card">
+                            <div className="welcome-card-header">
+                                <span>🏦</span>
+                                <span>Mutual Fund Genie AI Assistant</span>
+                            </div>
+                            <div className="welcome-card-content">
+                                <h2>Get Started with HDFC Mutual Fund</h2>
+                                <p>Discover scheme details, NAV, AUM, and investment basics using our official data-backed assistant.</p>
+
+                                <div className="welcome-instruction-list">
+                                    <div className="welcome-instruction-item">
+                                        <span>📘</span>
+                                        <span>Click **Mutual Fund Basics** on the right to learn key concepts.</span>
+                                    </div>
+                                    <div className="welcome-instruction-item">
+                                        <span>💬</span>
+                                        <span>Try **Suggested Questions** to explore specific fund details.</span>
+                                    </div>
+                                    <div className="welcome-instruction-item">
+                                        <span>📋</span>
+                                        <span>Select from **Schemes in Scope** to ask about specific funds.</span>
+                                    </div>
+                                    <div className="welcome-instruction-item">
+                                        <span>⌨️</span>
+                                        <span>Or simply **type your question** in the chat box below.</span>
+                                    </div>
+                                </div>
+
+                                <p style={{ color: 'var(--brand-gold)', fontWeight: '600', marginTop: '4px' }}>
+                                    👇 Start by clicking a question!
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 )}
 

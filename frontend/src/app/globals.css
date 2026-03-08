@@ -507,35 +507,73 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Welcome screen */
+/* Welcome card — styled like panel-cards for consistency */
 .welcome-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 12px;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: clamp(24px, 4vw, 40px) 16px;
+  padding: 30px 16px;
   animation: fadeIn 0.5s ease;
 }
 
-.welcome-screen .welcome-icon {
-  font-size: 3rem;
-  margin-bottom: 8px;
+.welcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  text-align: center;
 }
 
-.welcome-screen h2 {
-  font-size: clamp(1rem, 3vw, 1.1rem);
-  font-weight: 600;
+.welcome-card-header {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-.welcome-screen p {
-  font-size: clamp(0.8rem, 2vw, 0.85rem);
-  max-width: 320px;
-  line-height: 1.6;
+.welcome-card-content {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.welcome-instruction-list {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.welcome-instruction-item {
+  display: flex;
+  gap: 10px;
+}
+
+.welcome-card h2 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.welcome-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: none;
 }
 
 /* ============================================
@@ -1249,6 +1287,39 @@ nextjs-portal {
 .user-av {
   background: linear-gradient(135deg, #1e293b, #334155);
   border: 1px solid var(--border-medium);
+}
+
+/* ============================================
+   SCHEME RESULT GROUPING
+   ============================================ */
+.scheme-result-group {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.scheme-result-group:hover {
+  border-color: rgba(0, 78, 168, 0.3);
+}
+
+.scheme-result-header {
+  font-weight: 700;
+  color: var(--brand-gold);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+}
+
+.scheme-result-header::before {
+  content: '🏦';
+  font-size: 0.9rem;
 }
 
 .bot-bubble {
