@@ -267,7 +267,7 @@ export default function ChatInterface({ externalQuery, onExternalQueryHandled })
                 return next;
             });
         } catch (err) {
-            setError('⚠️ Could not reach the server. Make sure the backend is running on port 8000.');
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
