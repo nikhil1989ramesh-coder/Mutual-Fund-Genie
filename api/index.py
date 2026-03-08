@@ -23,8 +23,6 @@ async def chat(data: dict):
     if not message:
         return {"answer": "Error: No message received.", "sources": []}
     
-    # Note: Full RAG agent might not load in Vercel serverless without heavy config
-    # This serves as a reliable fallback or stub that confirms connectivity.
     return {
         "answer": "Received your query about mutual funds. (Backend connectivity confirmed)",
         "sources": ["https://www.hdfcmf.com"]

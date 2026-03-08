@@ -1,24 +1,6 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "api/index.py",
-            "use": "@vercel/python"
-        },
-        {
-            "src": "api/health.py",
-            "use": "@vercel/python"
-        },
-        {
-            "src": "frontend/package.json",
-            "use": "@vercel/next"
-        }
-    ],
     "rewrites": [
-        {
-            "source": "/api/health",
-            "destination": "api/health.py"
-        },
         {
             "source": "/api/(.*)",
             "destination": "api/index.py"
