@@ -176,6 +176,8 @@ python Phase-4_Backend_API/main.py
 cd frontend && npm run dev
 ```
 
+By default the frontend uses **built-in stub API routes** (no backend required). To use the FastAPI backend locally, set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `frontend/.env.local` and run the backend as above.
+
 ---
 
 ## 🧪 Testing
