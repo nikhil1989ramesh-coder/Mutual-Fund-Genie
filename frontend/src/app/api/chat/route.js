@@ -4,6 +4,23 @@ import { NextResponse } from 'next/server';
  * Stub POST /api/chat for Vercel when no external backend is set.
  * When NEXT_PUBLIC_API_URL is set, the client calls that URL instead.
  */
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+// Allow CORS preflight (OPTIONS) so browsers don't get 405 on same-origin POST.
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));

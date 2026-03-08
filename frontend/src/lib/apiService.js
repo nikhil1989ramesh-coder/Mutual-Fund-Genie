@@ -10,17 +10,27 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
  * Parse error body from a failed response; always return an object with detail.
  */
 async function parseErrorResponse(response) {
-  const contentType = response.headers.get('content-type') || '';
+  const contentType = (response && typeof response.headers?.get === 'function')
+    ? (response.headers.get('content-type') || '')
+    : '';
+  const status = response?.status;
   try {
     if (contentType.includes('application/json')) {
       const data = await response.json();
-      return { detail: data.detail || data.message || `Server error: ${response.status}` };
+      return { detail: data.detail || data.message || `Server error: ${status}` };
     }
-    const text = await response.text();
+    const text = typeof response?.text === 'function' ? await response.text() : '';
     if (text && text.length < 200) return { detail: text };
-    return { detail: `Server error: ${response.status}. Please try again.` };
+    return { detail: status ? `Server error: ${status}. Please try again.` : 'Request failed.' };
   } catch {
-    return { detail: response.status === 500 ? 'Server error. Please try again.' : `Request failed: ${response.status}` };
+    const msg = status === 405
+      ? 'Request method not allowed (405). Please refresh and try again.'
+      : status === 500
+        ? 'Server error. Please try again.'
+        : status
+          ? `Request failed: ${status}`
+          : 'Request failed.';
+    return { detail: msg };
   }
 }
 

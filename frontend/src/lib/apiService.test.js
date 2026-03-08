@@ -36,6 +36,8 @@ describe('sendChatMessage', () => {
     test('throws on non-ok HTTP response', async () => {
         fetch.mockResolvedValueOnce({
             ok: false,
+            status: 500,
+            headers: { get: () => 'application/json' },
             json: async () => ({ detail: 'Internal server error' }),
         });
 
@@ -52,6 +54,8 @@ describe('sendChatMessage', () => {
         // The backend returns 400 for empty messages; simulate that response
         fetch.mockResolvedValueOnce({
             ok: false,
+            status: 400,
+            headers: { get: () => 'application/json' },
             json: async () => ({ detail: 'Empty message received.' }),
         });
 
@@ -76,7 +80,8 @@ describe('fetchFAQs', () => {
         fetch.mockResolvedValueOnce({
             ok: false,
             status: 500,
-            json: async () => ({}),
+            headers: { get: () => 'application/json' },
+            json: async () => ({ detail: 'Failed to load FAQs' }),
         });
 
         await expect(fetchFAQs()).rejects.toThrow('Failed to load FAQs');
