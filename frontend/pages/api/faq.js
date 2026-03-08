@@ -2,10 +2,17 @@
  * Pages Router API: /api/faq
  * Handles GET /api/faq for Vercel (Pages API is well-supported).
  */
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
+
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {

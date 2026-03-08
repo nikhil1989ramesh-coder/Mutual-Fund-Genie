@@ -188,6 +188,10 @@ By default the frontend uses **built-in stub API routes** (no backend required).
 | **Frontend** | `cd frontend && npm test` (apiService + ChatInterface) |
 | **Integration** | `python Phase_6_Testing_Deliverables/test_suite.py` (if that folder exists) |
 
+### Build warnings (npm deprecations)
+
+When you run `npm install` in `frontend/` or when Vercel builds, you may see deprecation warnings for `whatwg-encoding`, `inflight`, or `glob`. These come from **transitive dependencies** (Next.js, Jest, ESLint). They do **not** fail the build. The project uses an `overrides` entry for `glob` in `frontend/package.json` to reduce some warnings; the rest can be ignored until upstream packages update.
+
 ---
 
 ## 🌐 Deployment (Vercel)
