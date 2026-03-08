@@ -43,7 +43,12 @@ function useCurrentTime() {
       }).toUpperCase();
       return `${day}, ${t} IST`;
     };
-    setTime(format());
+
+    // Defer initial setState to avoid ESLint sync updates error
+    setTimeout(() => {
+      setTime(format());
+    }, 0);
+
     const id = setInterval(() => setTime(format()), 60000);
     return () => clearInterval(id);
   }, []);
