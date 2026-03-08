@@ -1339,8 +1339,8 @@ nextjs-portal {
   }
 
   .header-badge {
-    display: none;
-    /* Save space on very small screens */
+    font-size: 0.62rem;
+    padding: 4px 8px;
   }
 
   .message-bubble {
