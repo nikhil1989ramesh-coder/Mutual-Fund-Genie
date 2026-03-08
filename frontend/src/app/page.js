@@ -155,7 +155,7 @@ export default function Home() {
               <span className="about-value">HDFC</span>
 
               <span className="about-label">Engine :</span>
-              <span className="about-value">Groq · Llama-3.3</span>
+              <span className="about-value">Groq · Gemini Fallback</span>
 
               <span className="about-label">Creator :</span>
               <span className="about-value">
