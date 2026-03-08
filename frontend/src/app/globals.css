@@ -1217,12 +1217,13 @@ nextjs-portal {
   }
 }
 
-/* ── Mobile: ≤768px — single column ─────── */
+/* ── Mobile: ≤768px — single column, no hiding panels ─────── */
 @media (max-width: 768px) {
   .app-container {
     padding: 0 10px;
-    height: 100dvh;
-    /* Use dynamic viewport height so mobile browser chrome is handled */
+    height: auto;
+    min-height: 100dvh;
+    /* Use dynamic viewport height and allow scrolling */
   }
 
   .app-header {
@@ -1249,20 +1250,30 @@ nextjs-portal {
     padding: 4px 8px;
   }
 
-  /* Single column: hide sidebars, let chat take full width */
+  /* Single column: stack sidebars instead of hiding to maintain UI parity */
   .main-content {
-    grid-template-columns: 1fr;
-    gap: 0;
-    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 12px 0;
   }
 
   .sidebar-left,
   .sidebar-right {
-    display: none;
+    display: flex;
+    flex-shrink: 0;
   }
 
   .chat-section-wrapper {
-    flex: 1;
+    flex: none;
+    min-height: 550px;
+    height: 70vh;
+    /* Make chat big enough to scroll inside */
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    background: rgba(13, 21, 38, 0.4);
+    display: flex;
+    flex-direction: column;
   }
 
   .chat-window {
