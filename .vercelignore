@@ -1,16 +1,10 @@
 # Files/folders to exclude from Vercel deployment
 Phase_1_Data_Ingestion/
-Phase_2_Knowledge_Base/
-Phase_3_Query_Generation/
 Phase-4_Backend_API/
 Phase_5_Scheduler/
 Phase-6_Testing_Deliverables/
 URL_Tests/
 legacy/
-api/
-requirements.txt
-README.md
-architecture.md
 
 *.pyc
 __pycache__/

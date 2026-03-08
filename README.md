@@ -176,6 +176,8 @@ python Phase-4_Backend_API/main.py
 cd frontend && npm run dev
 ```
 
+Or from repo root: `npm run dev` (runs the frontend automatically).
+
 By default the frontend uses **built-in stub API routes** (no backend required). To use the FastAPI backend locally, set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `frontend/.env.local` and run the backend as above.
 
 ---
@@ -195,6 +197,8 @@ When you run `npm install` in `frontend/` or when Vercel builds, you may see dep
 ---
 
 ## 🌐 Deployment (Vercel)
+
+**If production shows "Server error" or API calls 404:** Set **Root Directory** to **`frontend`** in Vercel → Project Settings → General, then redeploy. See **[ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md)** for full root cause and fix.
 
 ### Recommended: Deploy the Next.js app only (frontend)
 

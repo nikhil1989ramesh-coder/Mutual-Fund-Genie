@@ -124,7 +124,10 @@ class MutualFundRAG:
             chunks_path = os.path.join(BASE_DIR, "Phase_2_Knowledge_Base", "vector_store_chunks.json")
             with open(chunks_path, "r", encoding="utf-8") as f:
                 self.chunks = json.load(f)
-            print("FAISS reload successful. RAG Agent is up to date.")
+            # Clear response cache so users get answers from the newly loaded knowledge base
+            # (e.g. updated NAVs, AUMs, fee structures) instead of stale cached answers.
+            self._response_cache.clear()
+            print("FAISS reload successful. RAG Agent is up to date (response cache cleared).")
             return True
         except Exception as e:
             print(f"Error reloading Vector Database: {e}")

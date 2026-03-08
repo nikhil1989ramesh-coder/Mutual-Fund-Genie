@@ -8,7 +8,13 @@ import os
 import uvicorn
 
 # Ensure path is correct for local and Vercel environments
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Check if we are in the Phase-4_Backend_API directory or root
+if os.path.basename(CURRENT_FILE_DIR) == 'Phase-4_Backend_API':
+    BASE_DIR = os.path.dirname(CURRENT_FILE_DIR)
+else:
+    BASE_DIR = CURRENT_FILE_DIR
+
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
