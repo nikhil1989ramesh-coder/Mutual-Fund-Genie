@@ -276,33 +276,31 @@ You can explore the app in multiple ways:
                         <div className="welcome-card">
                             <div className="welcome-card-header">
                                 <span>🏦</span>
-                                <span>Mutual Fund Genie AI Assistant</span>
+                                <span>Welcome to Mutual Fund Genie — Ask, Explore, Learn</span>
                             </div>
                             <div className="welcome-card-content">
-                                <h2>Get Started with HDFC Mutual Fund</h2>
-                                <p>Discover scheme details, NAV, AUM, and investment basics using our official data-backed assistant.</p>
 
                                 <div className="welcome-instruction-list">
                                     <div className="welcome-instruction-item">
-                                        <span>📘</span>
-                                        <span>Click **Mutual Fund Basics** on the right to learn key concepts.</span>
+                                        <span>•</span>
+                                        <span>Click a question under **Mutual Fund Basics** to learn key concepts.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
-                                        <span>💬</span>
-                                        <span>Try **Suggested Questions** to explore specific fund details.</span>
+                                        <span>•</span>
+                                        <span>Try the **Suggested Questions** to explore fund details instantly.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
-                                        <span>📋</span>
-                                        <span>Select from **Schemes in Scope** to ask about specific funds.</span>
+                                        <span>•</span>
+                                        <span>Select any scheme from **Schemes in Scope** to ask about it.</span>
                                     </div>
                                     <div className="welcome-instruction-item">
-                                        <span>⌨️</span>
-                                        <span>Or simply **type your question** in the chat box below.</span>
+                                        <span>•</span>
+                                        <span>Or type your own question in the chat box below.</span>
                                     </div>
                                 </div>
 
-                                <p style={{ color: 'var(--brand-gold)', fontWeight: '600', marginTop: '4px' }}>
-                                    👇 Start by clicking a question!
+                                <p style={{ color: 'var(--brand-gold)', fontWeight: '600', marginTop: '16px', fontSize: '0.9rem' }}>
+                                    👇 Start by clicking a question to begin.
                                 </p>
                             </div>
                         </div>
