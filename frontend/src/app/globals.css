@@ -1217,17 +1217,17 @@ nextjs-portal {
   }
 }
 
-/* ── Mobile: ≤768px — single column, no hiding panels ─────── */
+/* ── Mobile: ≤768px — Horizontal Swipe Layout ─────── */
 @media (max-width: 768px) {
   .app-container {
-    padding: 0 10px;
-    height: auto;
-    min-height: 100dvh;
-    /* Use dynamic viewport height and allow scrolling */
+    padding: 0;
+    height: 100dvh;
+    overflow: hidden;
+    /* Lock vertical scrolling of the html body */
   }
 
   .app-header {
-    padding: 10px 0 8px;
+    padding: 10px 10px 8px;
     gap: 10px;
   }
 
@@ -1250,30 +1250,38 @@ nextjs-portal {
     padding: 4px 8px;
   }
 
-  /* Single column: stack sidebars instead of hiding to maintain UI parity */
+  /* Force desktop-like horizontal layout with snap swiping */
   .main-content {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 240px calc(100vw - 20px) 240px;
     gap: 16px;
-    padding: 12px 0;
+    padding: 10px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 100%;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar-left,
   .sidebar-right {
     display: flex;
     flex-shrink: 0;
+    flex-direction: column;
+    height: 100%;
+    scroll-snap-align: center;
   }
 
   .chat-section-wrapper {
     flex: none;
-    min-height: 550px;
-    height: 70vh;
-    /* Make chat big enough to scroll inside */
+    height: 100%;
     border: 1px solid var(--border-subtle);
     border-radius: 16px;
     background: rgba(13, 21, 38, 0.4);
     display: flex;
     flex-direction: column;
+    scroll-snap-align: center;
   }
 
   .chat-window {

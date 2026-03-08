@@ -17,6 +17,8 @@ export async function sendChatMessage(message) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true',
+        'User-Agent': 'Mozilla/5.0'
       },
       body: JSON.stringify({ message }),
       cache: 'no-store', // Force Next.js to bypass all caches and hit the Python API
