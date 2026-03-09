@@ -1,7 +1,30 @@
 /**
  * Next.js Pages API: /api/chat
- * Local stub when NEXT_PUBLIC_API_URL is unset. With backend, frontend calls Phase-4 FastAPI.
+ * Stub when NEXT_PUBLIC_API_URL is unset. On Vercel: friendly message + link to full RAG chat. Locally: dev hint.
  */
+
+const STREAMLIT_RAG_URL = 'https://nikhil-ramesh-ai-mfgenie.streamlit.app';
+
+function getStubAnswer() {
+  if (process.env.VERCEL === '1') {
+    return (
+      'This demo is running without a connected RAG backend. For full AI answers with sources on HDFC Mutual Fund schemes, use the dedicated chat: ' +
+      STREAMLIT_RAG_URL +
+      ' — or ask your administrator to connect a backend (NEXT_PUBLIC_API_URL).\n\nLast updated from sources: ' +
+      STREAMLIT_RAG_URL
+    );
+  }
+  return (
+    'Running without RAG backend. Start Phase-4_Backend_API (port 8000) and set NEXT_PUBLIC_API_URL=http://localhost:8000 in frontend/.env.local for full answers.\n\nLast updated from sources: https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund'
+  );
+}
+
+function getStubSources() {
+  if (process.env.VERCEL === '1') {
+    return [STREAMLIT_RAG_URL];
+  }
+  return ['https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund'];
+}
 
 export const config = {
   api: {
@@ -27,8 +50,8 @@ export default function handler(req, res) {
     if (!message) return res.status(400).json({ detail: 'Empty message received.' });
 
     return res.status(200).json({
-      answer: 'Running without RAG backend. Start Phase-4_Backend_API (port 8000) and set NEXT_PUBLIC_API_URL=http://localhost:8000 in frontend/.env.local for full answers.\n\nLast updated from sources: https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund',
-      sources: ['https://www.indmoney.com/mutual-funds/amc/hdfc-mutual-fund'],
+      answer: getStubAnswer(),
+      sources: getStubSources(),
     });
   } catch (err) {
     console.error('[pages/api/chat]', err);
