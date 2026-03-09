@@ -8,9 +8,9 @@ const STREAMLIT_RAG_URL = 'https://nikhil-ramesh-ai-mfgenie.streamlit.app';
 function getStubAnswer() {
   if (process.env.VERCEL === '1') {
     return (
-      'This demo is running without a connected RAG backend. For full AI answers with sources on HDFC Mutual Fund schemes, use the dedicated chat: ' +
+      'For full AI answers with sources on HDFC Mutual Fund schemes, use the dedicated chat here: ' +
       STREAMLIT_RAG_URL +
-      ' — or ask your administrator to connect a backend (NEXT_PUBLIC_API_URL).\n\nLast updated from sources: ' +
+      '\n\nYou can ask questions there and get instant answers with citations. Last updated from sources: ' +
       STREAMLIT_RAG_URL
     );
   }
