@@ -101,8 +101,40 @@
 
 ## 🧪 Testing
 
-- **Backend:** `tests/test_api.py` — pytest; 9 tests covering `/api/chat` (valid, empty, whitespace, missing field, internal error), `/api/faq` (list + fallback), and `/docs` / `/openapi.json`.
-- **Frontend:** Jest (apiService + ChatInterface) — 9 tests covering success/error paths, server-busy banner, and network failure handling.
+- **Backend (unit):** `tests/test_api.py` — pytest; 9 tests covering `/api/chat` (valid, empty, whitespace, missing field, internal error), `/api/faq` (list + fallback), and `/docs` / `/openapi.json`.
+- **Frontend (unit):** Jest (apiService + ChatInterface) — 9 tests covering success/error paths, server-busy banner, and network failure handling.
+- **Deployment (live):**
+  - `scripts/test_vercel_frontend.py` — Tests Vercel-deployed Next.js app: GET /, GET /api/faq, POST /api/chat.
+  - `scripts/test_deployed_backends.py` — Tests Streamlit app, Vercel frontend, and optional FastAPI backend URLs.
+
+---
+
+## 🚀 Deployment (Integrated)
+
+- **Backend (RAG chat UI):** Deployed on **Streamlit Cloud**. Main file: `streamlit_app.py`; branch: `main`. Uses Phase 3 RAG agent; no scheduler. Live: **https://nikhil-ramesh-ai-mfgenie.streamlit.app**
+- **Frontend (Next.js):** Deployed on **Vercel**. Root Directory: `frontend`; built-in stub `/api/chat` and `/api/faq` when `NEXT_PUBLIC_API_URL` is unset. Optional: set `NEXT_PUBLIC_API_URL` to a FastAPI backend (e.g. Railway/Render) for full RAG from the Next.js UI.
+- **Phases integrated:** Phase 1 (ingest) → Phase 2 (FAISS + chunks) → Phase 3 (RAG agent) used by Phase-4 FastAPI and by `streamlit_app.py`; Phase 5 scheduler runs inside FastAPI lifespan. Frontend (Next.js) calls Backend API or stub; all phases work together locally or via Streamlit + Vercel.
+
+---
+
+## 📂 Project Structure (current)
+
+```
+├── Phase_1_Data_Ingestion/     # Scrapers, extracted_corpus.json
+├── Phase_2_Knowledge_Base/     # processor.py, build_faiss_db.py, vector_store_chunks.json, faiss_index.bin
+├── Phase_3_Query_Generation/   # RAG agent (retrieve + Groq/Gemini), in-memory cache
+├── Phase-4_Backend_API/        # FastAPI (chat, FAQ), lifespan + scheduler
+├── Phase_5_Scheduler/          # APScheduler
+├── frontend/                   # Next.js 15 (app/, components/, lib/, pages/api/)
+├── tests/                      # pytest test_api.py (9 API tests)
+├── scripts/                    # test_vercel_frontend.py, test_deployed_backends.py
+├── streamlit_app.py            # Streamlit Cloud entry (RAG chat UI)
+├── Procfile                    # For Railway/Render (FastAPI start command)
+├── architecture.md             # This document
+├── ACTIVITIES.md               # Step-by-step activities (local + Streamlit Cloud + full stack)
+├── DEPLOY_STREAMLIT.md         # Streamlit deploy guide
+└── requirements.txt
+```
 
 ---
 

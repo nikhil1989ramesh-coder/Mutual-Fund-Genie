@@ -65,7 +65,7 @@ A RAG-powered chatbot that answers factual questions about the **top 5 HDFC Mutu
 | **Frontend** | Next.js 15 (React 19) |
 | **Automation** | APScheduler |
 | **Testing** | pytest (backend), Jest + React Testing Library (frontend) |
-| **Deployment** | Local (run backend + frontend; see Running Locally) |
+| **Deployment** | Streamlit Cloud (RAG chat), Vercel (Next.js frontend); see below. |
 
 ---
 
@@ -107,14 +107,19 @@ APScheduler runs in the FastAPI lifespan; periodically triggers ingest/rebuild a
 ## 📂 Project Structure
 
 ```
-├── Phase_1_Data_Ingestion/     # Scrapers for ET Money, Groww, SEBI
+├── Phase_1_Data_Ingestion/     # Scrapers for ET Money, Groww, SEBI; extracted_corpus.json
 ├── Phase_2_Knowledge_Base/     # Chunking, FAISS build (build_faiss_db.py), vector_store_chunks.json
 ├── Phase_3_Query_Generation/   # RAG agent (retrieve + Groq/Gemini), in-memory cache
 ├── Phase-4_Backend_API/        # FastAPI (chat, FAQ), lifespan + scheduler
 ├── Phase_5_Scheduler/          # APScheduler
 ├── frontend/                   # Next.js 15 (app/, components/, lib/, pages/api/)
 ├── tests/                      # pytest test_api.py (9 API tests)
+├── scripts/                    # test_vercel_frontend.py, test_deployed_backends.py (deployment tests)
+├── streamlit_app.py            # Streamlit Cloud entry (RAG chat UI)
+├── Procfile                    # Railway/Render: uvicorn start for FastAPI
 ├── architecture.md             # Full architecture and corpus URLs
+├── ACTIVITIES.md               # Step-by-step: local run, Streamlit Cloud, full stack, tests
+├── DEPLOY_STREAMLIT.md         # Streamlit deploy guide
 └── requirements.txt
 ```
 
@@ -195,9 +200,22 @@ When you run `npm install` in `frontend/`, you may see deprecation warnings for 
 
 ## 🌐 Deployment
 
-This project is configured for **local development**. Run the backend (`Phase-4_Backend_API/main.py`) and frontend (`npm run dev` from repo root or `frontend/`) as described in **Running Locally**. To host in the cloud, deploy the `frontend/` app (e.g. to a Node.js host) and optionally run the FastAPI backend elsewhere; set `NEXT_PUBLIC_API_URL` in the frontend to point to the backend.
+**Live deployments (integrated):**
 
-**Deploy backend (RAG) on Streamlit:** Run the RAG chat UI with `streamlit run streamlit_app.py` from the repo root (see **[DEPLOY_STREAMLIT.md](DEPLOY_STREAMLIT.md)** for local run and Streamlit Cloud deployment, including secrets and knowledge-base setup). For **detailed step-by-step instructions** for all activities (Streamlit local, Streamlit Cloud deploy, full stack local, tests), see **[ACTIVITIES.md](ACTIVITIES.md)**.
+| App | URL |
+|-----|-----|
+| **Backend (RAG chat)** | [https://nikhil-ramesh-ai-mfgenie.streamlit.app](https://nikhil-ramesh-ai-mfgenie.streamlit.app) — full RAG Q&A with citations |
+| **Frontend (Next.js)** | [https://mutual-fund-genie-nikhil1989ramesh-5219s-projects.vercel.app](https://mutual-fund-genie-nikhil1989ramesh-5219s-projects.vercel.app) — chat UI (stub API or set `NEXT_PUBLIC_API_URL` for FastAPI) |
+
+- **Streamlit:** Main file `streamlit_app.py`, branch `main`; see **[DEPLOY_STREAMLIT.md](DEPLOY_STREAMLIT.md)**. For detailed steps (local, Streamlit Cloud, full stack, tests) see **[ACTIVITIES.md](ACTIVITIES.md)**.
+- **Vercel:** Root Directory = `frontend`; optional env `NEXT_PUBLIC_API_URL` for a FastAPI backend (e.g. Railway/Render). Push to `main` triggers redeploy.
+
+**Test deployed frontend/backend:**
+
+```bash
+python scripts/test_vercel_frontend.py
+python scripts/test_deployed_backends.py
+```
 
 ---
 
