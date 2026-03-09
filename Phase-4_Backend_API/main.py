@@ -83,6 +83,19 @@ class ChatResponse(BaseModel):
 class FAQResponse(BaseModel):
     faqs: List[str]
 
+
+@app.get("/")
+async def root():
+    """Root path: return service info and links so base URL does not 404."""
+    return {
+        "service": "Mutual Fund RAG API",
+        "docs": "/docs",
+        "openapi": "/openapi.json",
+        "chat": "POST /api/chat",
+        "faq": "GET /api/faq",
+    }
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
