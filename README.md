@@ -116,7 +116,7 @@ APScheduler runs in the FastAPI lifespan; periodically triggers ingest/rebuild a
 ├── tests/                      # pytest test_api.py (9 API tests)
 ├── scripts/                    # test_vercel_frontend.py, test_deployed_backends.py (deployment tests)
 ├── streamlit_app.py            # Streamlit Cloud entry (RAG chat UI)
-├── Procfile                    # Railway/Render: uvicorn start for FastAPI
+├── Procfile                    # Railway: uvicorn start for FastAPI
 ├── architecture.md             # Full architecture and corpus URLs
 ├── ACTIVITIES.md               # Step-by-step: local run, Streamlit Cloud, full stack, tests
 ├── DEPLOY_STREAMLIT.md         # Streamlit deploy guide
@@ -208,7 +208,8 @@ When you run `npm install` in `frontend/`, you may see deprecation warnings for 
 | **Frontend (Next.js)** | [https://mutual-fund-genie-nikhil1989ramesh-5219s-projects.vercel.app](https://mutual-fund-genie-nikhil1989ramesh-5219s-projects.vercel.app) — chat UI (stub API or set `NEXT_PUBLIC_API_URL` for FastAPI) |
 
 - **Streamlit:** Main file `streamlit_app.py`, branch `main`; see **[DEPLOY_STREAMLIT.md](DEPLOY_STREAMLIT.md)**. For detailed steps (local, Streamlit Cloud, full stack, tests) see **[ACTIVITIES.md](ACTIVITIES.md)**.
-- **Vercel:** Root Directory = `frontend`; optional env `NEXT_PUBLIC_API_URL` for a FastAPI backend (e.g. Railway/Render). Push to `main` triggers redeploy.
+- **Vercel:** Root Directory = `frontend`; optional env `NEXT_PUBLIC_API_URL` for a FastAPI backend (e.g. Railway). Push to `main` triggers redeploy.
+- **Railway (FastAPI backend):** See **[DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)** for step-by-step deployment and Vercel integration.
 
 **Test deployed frontend/backend:**
 

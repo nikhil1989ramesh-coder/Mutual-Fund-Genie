@@ -112,7 +112,7 @@
 ## 🚀 Deployment (Integrated)
 
 - **Backend (RAG chat UI):** Deployed on **Streamlit Cloud**. Main file: `streamlit_app.py`; branch: `main`. Uses Phase 3 RAG agent; no scheduler. Live: **https://nikhil-ramesh-ai-mfgenie.streamlit.app**
-- **Frontend (Next.js):** Deployed on **Vercel**. Root Directory: `frontend`; built-in stub `/api/chat` and `/api/faq` when `NEXT_PUBLIC_API_URL` is unset. Optional: set `NEXT_PUBLIC_API_URL` to a FastAPI backend (e.g. Railway/Render) for full RAG from the Next.js UI.
+- **Frontend (Next.js):** Deployed on **Vercel**. Root Directory: `frontend`; built-in stub `/api/chat` and `/api/faq` when `NEXT_PUBLIC_API_URL` is unset. Optional: set `NEXT_PUBLIC_API_URL` to a FastAPI backend (e.g. Railway) for full RAG from the Next.js UI.
 - **Phases integrated:** Phase 1 (ingest) → Phase 2 (FAISS + chunks) → Phase 3 (RAG agent) used by Phase-4 FastAPI and by `streamlit_app.py`; Phase 5 scheduler runs inside FastAPI lifespan. Frontend (Next.js) calls Backend API or stub; all phases work together locally or via Streamlit + Vercel.
 
 ---
@@ -129,7 +129,7 @@
 ├── tests/                      # pytest test_api.py (9 API tests)
 ├── scripts/                    # test_vercel_frontend.py, test_deployed_backends.py
 ├── streamlit_app.py            # Streamlit Cloud entry (RAG chat UI)
-├── Procfile                    # For Railway/Render (FastAPI start command)
+├── Procfile                    # For Railway (FastAPI start command)
 ├── architecture.md             # This document
 ├── ACTIVITIES.md               # Step-by-step activities (local + Streamlit Cloud + full stack)
 ├── DEPLOY_STREAMLIT.md         # Streamlit deploy guide
